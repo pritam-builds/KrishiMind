@@ -1,16 +1,23 @@
 // src/components/Navbar.jsx
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useCrop } from '../context/CropContext';
 import {
-  MapPin,
+  Sprout,
   Globe,
-  Bell,
   Sparkles,
   Menu,
   X,
-  Sprout,
-  ChevronRight
+  User,
+  ChevronDown,
+  MapPin,
+  Home,
+  Activity,
+  LayoutDashboard,
+  CloudSun,
+  TrendingUp,
+  History,
+  Check
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -19,93 +26,260 @@ export default function Navbar() {
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [selectedLang, setSelectedLang] = useState('English');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const langDropdownRef = useRef(null);
 
-  // Map route pathname to user-friendly titles
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path === '/farmer') return 'Farmer Dashboard';
-    if (path === '/crop-analysis') return 'Crop Health Assessment';
-    if (path === '/weather') return 'Weather Intelligence';
-    if (path === '/market') return 'Market Intelligence';
-    if (path === '/recommendation') return 'Decision Support';
-    if (path === '/history') return 'Previous Analyses';
-    if (path === '/profile') return 'Farmer Profile';
-    return 'KrishiMind';
-  };
+  // 6 Required Navigation Links
+  const navItems = [
+    { name: 'Home', path: '/', icon: Home },
+    { name: 'Crop Check', path: '/crop-analysis', icon: Activity },
+    { name: 'Dashboard', path: '/farmer', icon: LayoutDashboard },
+    { name: 'Weather', path: '/weather', icon: CloudSun },
+    { name: 'Market', path: '/market', icon: TrendingUp },
+    { name: 'History', path: '/history', icon: History }
+  ];
 
-  const languages = ['English', 'मराठी (Marathi)', 'हिंदी (Hindi)', 'ಕನ್ನಡ (Kannada)', 'తెలుగు (Telugu)'];
+  // Required 3 Languages: English / मराठी / हिन्दी
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'mr', label: 'मराठी' },
+    { code: 'hi', label: 'हिन्दी' }
+  ];
+
+  // Auto-close dropdowns and mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setShowLanguageModal(false);
+  }, [location.pathname]);
+
+  // Click outside to close language dropdown
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+        setShowLanguageModal(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-stone-200">
-      <div className="px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
-        {/* Mobile Brand / Page Title */}
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-stone-200">
+      <div className="px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
+        {/* Brand / Logo */}
         <div className="flex items-center gap-3">
-          <Link to="/" className="md:hidden flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white flex items-center justify-center shadow-sm shadow-emerald-800/20 group-hover:scale-105 transition-transform">
               <Sprout className="w-5 h-5" />
             </div>
-            <span className="font-extrabold text-stone-900 text-base">KrishiMind</span>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-stone-900 text-base leading-tight tracking-tight">KrishiMind</span>
+              <span className="text-[10px] font-semibold text-emerald-700 leading-none hidden sm:inline">AI Farm Advisory</span>
+            </div>
           </Link>
-
-          <div className="hidden md:flex items-center gap-2 text-xs text-stone-500">
-            <span className="font-medium text-stone-400">KrishiMind</span>
-            <ChevronRight className="w-3.5 h-3.5 text-stone-300" />
-            <span className="font-bold text-stone-800">{getPageTitle()}</span>
-          </div>
         </div>
 
-        {/* Right tools: Location pill, Language switcher, Quick CTA */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Location Badge */}
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100/80 rounded-full text-xs font-medium text-stone-700 border border-stone-200">
+        {/* Desktop Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-1 bg-stone-100/70 p-1 rounded-2xl border border-stone-200/60">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              end={item.path === '/'}
+              className={({ isActive }) =>
+                `px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-white text-emerald-800 font-bold shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-white/60'
+                }`
+              }
+            >
+              {item.name}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Right Tools: Location, Language, Profile, CTA, Mobile Hamburger */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Location Badge (Large screens) */}
+          <div className="hidden 2xl:inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100/80 rounded-full text-xs font-medium text-stone-700 border border-stone-200">
             <MapPin className="w-3.5 h-3.5 text-emerald-600" />
             <span>{profile?.district || 'Pune'}, {profile?.state || 'Maharashtra'}</span>
           </div>
 
           {/* Language Selector Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={langDropdownRef}>
             <button
               type="button"
               onClick={() => setShowLanguageModal(!showLanguageModal)}
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors border border-stone-200"
+              aria-expanded={showLanguageModal}
+              aria-label="Select language"
             >
               <Globe className="w-3.5 h-3.5 text-stone-500" />
-              <span className="hidden sm:inline">{selectedLang}</span>
-              <span className="sm:hidden">EN</span>
+              <span className="hidden sm:inline font-medium">{selectedLang}</span>
+              <span className="sm:hidden font-medium">
+                {selectedLang === 'English' ? 'EN' : selectedLang === 'मराठी' ? 'म' : 'हि'}
+              </span>
+              <ChevronDown className="w-3 h-3 text-stone-400" />
             </button>
 
             {showLanguageModal && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-stone-200 p-2 z-50">
-                <div className="text-[11px] font-bold text-stone-400 px-3 py-1 uppercase tracking-wider">
-                  Select Language
+              <div className="absolute right-0 mt-2 w-36 bg-white rounded-2xl shadow-xl border border-stone-200 p-1.5 z-50 animate-in fade-in duration-100">
+                <div className="text-[10px] font-bold text-stone-400 px-2.5 py-1 uppercase tracking-wider">
+                  Language
                 </div>
-                {languages.map(lang => (
+                {languages.map((lang) => (
                   <button
-                    key={lang}
+                    key={lang.code}
                     type="button"
                     onClick={() => {
-                      setSelectedLang(lang.split(' ')[0]);
+                      setSelectedLang(lang.label);
                       setShowLanguageModal(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-xs font-medium text-stone-700 hover:bg-emerald-50 hover:text-emerald-800 rounded-xl transition-colors"
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-colors ${
+                      selectedLang === lang.label
+                        ? 'bg-emerald-50 text-emerald-800 font-bold'
+                        : 'text-stone-700 hover:bg-stone-100'
+                    }`}
                   >
-                    {lang}
+                    <span>{lang.label}</span>
+                    {selectedLang === lang.label && <Check className="w-3.5 h-3.5 text-emerald-600" />}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* New Crop Quick Action */}
+          {/* Farmer / Profile Icon */}
+          <Link
+            to="/profile"
+            className={`p-1.5 rounded-xl border transition-colors flex items-center gap-2 ${
+              location.pathname === '/profile'
+                ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                : 'border-stone-200 text-stone-700 hover:bg-stone-100 hover:text-stone-900'
+            }`}
+            title={profile?.name ? `Farmer: ${profile.name}` : "Farmer Profile"}
+            aria-label="Farmer Profile"
+          >
+            <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
+              {profile?.name ? profile.name.charAt(0) : <User className="w-4 h-4 text-emerald-700" />}
+            </div>
+            <span className="hidden xl:inline text-xs font-semibold text-stone-700 max-w-[80px] truncate">
+              {profile?.name?.split(' ')[0] || 'Profile'}
+            </span>
+          </Link>
+
+          {/* Start Crop Check CTA */}
           <Link
             to="/farmer?action=analyze"
-            className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-1.5 px-3.5 rounded-xl shadow-xs transition-colors"
+            className="hidden sm:inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2 px-3.5 rounded-xl shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
-            <span>+ Analyze Crop</span>
+            <span>Start Crop Check</span>
           </Link>
+
+          {/* Mobile Hamburger Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden p-2 rounded-xl text-stone-700 hover:bg-stone-100 transition-colors border border-stone-200"
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5 text-stone-800" /> : <Menu className="w-5 h-5 text-stone-800" />}
+          </button>
         </div>
       </div>
+
+      {/* Responsive Mobile Menu Drawer */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden bg-white border-t border-stone-200 px-4 py-4 space-y-3.5 shadow-lg">
+          {/* Navigation Links */}
+          <div className="space-y-1">
+            <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-2 pb-1">
+              Navigation
+            </div>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = item.path === '/' 
+                ? location.pathname === '/' 
+                : location.pathname.startsWith(item.path);
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  end={item.path === '/'}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
+                      : 'text-stone-700 hover:bg-stone-100'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-stone-400'}`} />
+                  <span>{item.name}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+
+          {/* Primary CTA in Mobile Menu */}
+          <div className="pt-2 border-t border-stone-100">
+            <Link
+              to="/farmer?action=analyze"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-colors"
+            >
+              <Sparkles className="w-4 h-4 text-emerald-200" />
+              <span>Start Crop Check</span>
+            </Link>
+          </div>
+
+          {/* Profile Details in Mobile Menu */}
+          <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
+            <Link
+              to="/profile"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 text-xs font-semibold text-stone-700 hover:text-emerald-800"
+            >
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
+                {profile?.name ? profile.name.charAt(0) : <User className="w-4 h-4 text-emerald-700" />}
+              </div>
+              <div>
+                <div className="font-bold text-stone-900">{profile?.name || 'Farmer Profile'}</div>
+                <div className="text-[11px] text-stone-500 font-normal">
+                  {profile?.village ? `${profile.village}, ${profile.district}` : 'View profile settings'}
+                </div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Quick Language Switcher in Mobile Menu */}
+          <div className="pt-2 border-t border-stone-100">
+            <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-2 pb-1.5">
+              Select Language / भाषा
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLang(lang.label);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`py-1.5 px-2 text-xs font-medium rounded-xl text-center border transition-all ${
+                    selectedLang === lang.label
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold'
+                      : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
