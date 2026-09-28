@@ -63,15 +63,15 @@ export default function Landing() {
 
             {/* Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-stone-900 tracking-tight leading-[1.15] mb-6">
-              Make Better Decisions <br className="hidden sm:inline" />
+              Understand Your Crop. <br className="hidden sm:inline" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700">
-                for Your Farm
+                Decide With Better Information.
               </span>
             </h1>
 
             {/* Description */}
             <p className="text-base sm:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed mb-8">
-              KrishiMind combines crop observations, weather conditions and market intelligence to help farmers understand their crop and decide what to consider next.
+              Add your crop details, observations and a photo to assess crop health, weather risk and market conditions.
             </p>
 
             {/* CTA Buttons */}
@@ -80,7 +80,7 @@ export default function Landing() {
                 to="/farmer?action=analyze"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-base py-3.5 px-8 rounded-2xl shadow-lg shadow-emerald-800/25 transition-all hover:translate-y-[-1px]"
               >
-                <span>Analyze My Crop</span>
+                <span>Start Crop Check</span>
                 <ArrowRight className="w-5 h-5 text-emerald-200" />
               </Link>
 
@@ -101,28 +101,28 @@ export default function Landing() {
                     <span className="text-xs font-bold text-emerald-800 uppercase tracking-wide">Crop Health</span>
                     <Activity className="w-4 h-4 text-emerald-700" />
                   </div>
-                  <div className="text-lg font-bold text-stone-900">Moderate Risk</div>
-                  <p className="text-[11px] text-stone-500 mt-0.5">Leaf spot & humidity synthesis</p>
+                  <div className="text-lg font-bold text-stone-900">Risk Assessment</div>
+                  <p className="text-[11px] text-stone-500 mt-0.5">Based on crop observations and image</p>
                 </div>
 
                 {/* Visual Indicator 2 */}
                 <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-blue-800 uppercase tracking-wide">Pune Weather</span>
+                    <span className="text-xs font-bold text-blue-800 uppercase tracking-wide">Weather</span>
                     <CloudSun className="w-4 h-4 text-blue-700" />
                   </div>
-                  <div className="text-lg font-bold text-stone-900">28°C / 78% RH</div>
-                  <p className="text-[11px] text-stone-500 mt-0.5">65% rain probability</p>
+                  <div className="text-lg font-bold text-stone-900">Local Conditions</div>
+                  <p className="text-[11px] text-stone-500 mt-0.5">Weather factors affecting crop health</p>
                 </div>
 
                 {/* Visual Indicator 3 */}
                 <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-100">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">Tomato Mandi</span>
+                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">Market</span>
                     <TrendingUp className="w-4 h-4 text-amber-700" />
                   </div>
-                  <div className="text-lg font-bold text-stone-900">₹2,850 / Qtl</div>
-                  <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">+8.8% upward trend</p>
+                  <div className="text-lg font-bold text-stone-900">Market Intelligence</div>
+                  <p className="text-[11px] text-stone-500 mt-0.5">Price trends and local market conditions</p>
                 </div>
               </div>
 
