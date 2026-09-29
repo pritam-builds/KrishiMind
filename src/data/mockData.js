@@ -22,16 +22,12 @@ export const cropMasterList = [
 ];
 
 export const commonSymptomsList = [
-  { id: "yellow_leaves", label: "Yellowing leaves", category: "Color change" },
-  { id: "brown_spots", label: "Brown spots", category: "Lesions" },
-  { id: "white_spots", label: "White spots", category: "Lesions" },
-  { id: "leaf_curling", label: "Leaf curling", category: "Deformation" },
-  { id: "wilting", label: "Wilting", category: "Systemic" },
-  { id: "holes_leaves", label: "Holes in leaves", category: "Pest damage" },
-  { id: "stem_damage", label: "Stem damage", category: "Structural" },
-  { id: "fruit_damage", label: "Fruit damage", category: "Yield loss" },
-  { id: "slow_growth", label: "Slow growth / Stunting", category: "Growth" },
-  { id: "no_visible", label: "No visible symptoms", category: "Normal" }
+  { id: "yellow_leaves", label: "Yellow leaves", category: "Color change", description: "Leaves turning pale, yellow chlorosis or loss of green luster" },
+  { id: "brown_spots", label: "Brown spots", category: "Foliar lesions", description: "Circular or irregular necrotic brown, black or tan spots on leaves" },
+  { id: "wilting", label: "Wilting", category: "Plant vigor", description: "Drooping leaves or stems, loss of firmness despite watering" },
+  { id: "pest_activity", label: "Pest activity", category: "Insect signs", description: "Visible insects, larvae, chewed holes or sticky sap residues" },
+  { id: "slow_growth", label: "Slow growth", category: "Growth & vigor", description: "Stunted height, weak branching or delayed developmental progress" },
+  { id: "other", label: "Other", category: "Additional signs", description: "Other atypical field observations or specific irregularities" }
 ];
 
 export const mockCropAnalysis = {

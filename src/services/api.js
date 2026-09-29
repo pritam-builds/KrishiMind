@@ -47,13 +47,15 @@ export async function analyzeCrop(formData) {
 
     let calculatedRisk = 50;
     if (symptoms.includes("brown_spots") || symptoms.includes("Brown spots")) calculatedRisk += 12;
-    if (symptoms.includes("yellow_leaves") || symptoms.includes("Yellowing leaves")) calculatedRisk += 8;
-    if (symptoms.includes("holes_leaves")) calculatedRisk += 7;
+    if (symptoms.includes("yellow_leaves") || symptoms.includes("Yellow leaves") || symptoms.includes("Yellowing leaves")) calculatedRisk += 8;
+    if (symptoms.includes("wilting") || symptoms.includes("Wilting")) calculatedRisk += 10;
+    if (symptoms.includes("pest_activity") || symptoms.includes("Pest activity")) calculatedRisk += 9;
+    if (symptoms.includes("slow_growth") || symptoms.includes("Slow growth")) calculatedRisk += 6;
+    if (symptoms.includes("other") || symptoms.includes("Other")) calculatedRisk += 4;
     if (spreadSpeed === "Quickly") calculatedRisk += 10;
     else if (spreadSpeed === "Slowly") calculatedRisk -= 5;
-    if (recentRainfall === "Heavy") calculatedRisk += 8;
-    if (recentRainfall === "None") calculatedRisk -= 6;
-    if (symptoms.includes("no_visible")) calculatedRisk = 22;
+    if (recentRainfall === "Heavy" || recentRainfall === "Heavy rain") calculatedRisk += 8;
+    if (recentRainfall === "None" || recentRainfall === "No rain") calculatedRisk -= 6;
 
     calculatedRisk = Math.min(Math.max(calculatedRisk, 20), 92);
 
