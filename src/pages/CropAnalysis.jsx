@@ -105,62 +105,66 @@ export default function CropAnalysis() {
                 </h3>
               </div>
               <span className="text-xs text-stone-500 font-medium">
-                Photo Evidence Attached
+                {currentAnalysis?.imagePresent ? "Photo Attached" : "No Photo Attached"}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
               {/* Plant photo */}
               <div className="relative rounded-2xl overflow-hidden bg-stone-900 border border-stone-200 aspect-4/3 flex items-center justify-center group shadow-xs">
-                <img
-                  src={currentAnalysis?.visualObservations?.image || "https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=800&q=80"}
-                  alt="Crop foliage symptom"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute bottom-2 left-2 right-2 bg-stone-900/80 backdrop-blur-sm text-white text-[11px] px-2.5 py-1.5 rounded-xl flex items-center justify-between">
-                  <span className="font-medium">Uploaded Plant Photo</span>
-                  <span className="text-emerald-300 font-semibold">{currentAnalysis?.crop || "Tomato"}</span>
-                </div>
+                {currentAnalysis?.imagePresent && currentAnalysis?.visualObservations?.image ? (
+                  <>
+                    <img
+                      src={currentAnalysis.visualObservations.image}
+                      alt="Farmer-provided crop photo"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute bottom-2 left-2 right-2 bg-stone-900/80 backdrop-blur-sm text-white text-[11px] px-2.5 py-1.5 rounded-xl flex items-center justify-between">
+                      <span className="font-medium">Farmer-Provided Photo</span>
+                      <span className="text-emerald-300 font-semibold">{currentAnalysis?.crop || "Crop"}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-6 text-center text-sm text-stone-300">
+                    No photo was provided for this assessment.
+                  </div>
+                )}
               </div>
 
-              {/* Detected Visual Symptoms */}
+              {/* Farmer-Reported Concerns */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                  Detected Visual Symptoms
+                  Farmer-Reported Concerns
                 </h4>
 
                 <div className="space-y-2">
-                  {(currentAnalysis?.visualObservations?.detectedSymptoms || [
-                    { name: "Brown leaf spots", detail: "Concentric target-like necrotic rings observed on lower foliar canopy", severity: "Noticeable" },
-                    { name: "Leaf yellowing", detail: "Chlorotic margins surrounding spot lesions", severity: "Moderate" },
-                    { name: "Canopy humidity trace", detail: "Slight foliar moisture lingering on leaf surfaces", severity: "Environmental" }
-                  ]).map((sym, idx) => (
+                  {(currentAnalysis?.concerns || []).map((concern, idx) => (
                     <div
                       key={idx}
                       className="p-3 bg-stone-50 rounded-xl border border-stone-200/70"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-stone-900">{sym.name}</span>
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">
-                          {sym.severity}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-stone-600 mt-1 leading-relaxed">
-                        {sym.detail}
-                      </p>
+                      <span className="text-xs font-bold text-stone-900">{concern}</span>
                     </div>
                   ))}
+                  {(!currentAnalysis?.concerns || currentAnalysis.concerns.length === 0) && (
+                    <p className="p-3 bg-stone-50 rounded-xl border border-stone-200/70 text-[11px] text-stone-600">
+                      No specific concerns were reported.
+                    </p>
+                  )}
                 </div>
 
                 <div className="text-xs text-stone-500 font-medium pt-1">
                   Spread rate: <strong className="text-stone-800">{currentAnalysis?.visualObservations?.spreadRate || "Moderately spreading"}</strong>
                 </div>
+                <p className="text-[11px] text-stone-500">
+                  Photo analysis status: {currentAnalysis?.imageAnalysisStatus || "NOT_CONNECTED"}. The image is not analyzed by AI.
+                </p>
               </div>
             </div>
           </div>
 
           <div className="mt-5 pt-3 border-t border-stone-100 text-[11px] text-stone-500">
-            Field visual evidence is evaluated alongside your entered spread speed and microclimate humidity.
+            The risk indicator is calculated from the submitted crop details and farmer-reported field observations.
           </div>
         </div>
 

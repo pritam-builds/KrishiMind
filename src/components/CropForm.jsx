@@ -48,7 +48,7 @@ export default function CropForm({ onCancel }) {
     spreadSpeed: "Moderately",
 
     // 4. Crop Image
-    imagePreviewUrl: "https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=800&q=80",
+    imagePreviewUrl: null,
     imageFile: null,
 
     // 5. Farm Conditions
@@ -175,7 +175,8 @@ export default function CropForm({ onCancel }) {
       // Navigate smoothly to analysis view
       navigate('/crop-analysis');
     } catch (err) {
-      setValidationError('Assessment could not be processed at this moment. Please check your details and try again.');
+      const detail = err.response?.data?.detail || err.message;
+      setValidationError(`Assessment could not be processed: ${detail || 'Please try again.'}`);
     }
   };
 

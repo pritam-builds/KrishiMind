@@ -4,7 +4,6 @@
 
 import axios from 'axios';
 import {
-  mockCropAnalysis,
   mockWeatherData,
   mockMarketData,
   mockDecisionSupportData,
@@ -35,68 +34,36 @@ const simulateDelay = (ms = 700) => new Promise(resolve => setTimeout(resolve, m
  * Receives farmer input, symptoms, environmental conditions, and crop image.
  */
 export async function analyzeCrop(formData) {
-  if (USE_MOCK_API) {
-    await simulateDelay(1200);
+  const payload = new FormData();
+  const fields = {
+    ...formData,
+    symptoms: JSON.stringify(formData.symptoms || [])
+  };
+  const excludedFields = new Set([
+    'imageFile',
+    'imagePreviewUrl',
+    'locationStatus',
+    'locationMessage',
+    'symptomsLabels'
+  ]);
 
-    // Dynamically adjust mock risk score based on farmer symptoms & conditions
-    const symptoms = formData.symptoms || [];
-    const spreadSpeed = formData.spreadSpeed || "Moderately";
-    const recentRainfall = formData.recentRainfall || "Moderate";
-    const crop = formData.crop || "Tomato";
-    const growthStage = formData.growthStage || "Fruiting";
-
-    let calculatedRisk = 50;
-    if (symptoms.includes("brown_spots") || symptoms.includes("Brown spots")) calculatedRisk += 12;
-    if (symptoms.includes("yellow_leaves") || symptoms.includes("Yellow leaves") || symptoms.includes("Yellowing leaves")) calculatedRisk += 8;
-    if (symptoms.includes("wilting") || symptoms.includes("Wilting")) calculatedRisk += 10;
-    if (symptoms.includes("pest_activity") || symptoms.includes("Pest activity")) calculatedRisk += 9;
-    if (symptoms.includes("slow_growth") || symptoms.includes("Slow growth")) calculatedRisk += 6;
-    if (symptoms.includes("other") || symptoms.includes("Other")) calculatedRisk += 4;
-    if (spreadSpeed === "Quickly") calculatedRisk += 10;
-    else if (spreadSpeed === "Slowly") calculatedRisk -= 5;
-    if (recentRainfall === "Heavy" || recentRainfall === "Heavy rain") calculatedRisk += 8;
-    if (recentRainfall === "None" || recentRainfall === "No rain") calculatedRisk -= 6;
-
-    calculatedRisk = Math.min(Math.max(calculatedRisk, 20), 92);
-
-    let riskBand = "Low Risk";
-    let overallHealth = "Good Condition";
-    if (calculatedRisk >= 68) {
-      riskBand = "Moderate–High Risk";
-      overallHealth = "Moderate Risk";
-    } else if (calculatedRisk >= 45) {
-      riskBand = "Moderate Risk";
-      overallHealth = "Moderate Condition";
+  for (const [key, value] of Object.entries(fields)) {
+    if (excludedFields.has(key) || value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      payload.append(key, JSON.stringify(value));
+    } else {
+      payload.append(key, String(value));
     }
-
-    const customAnalysis = {
-      ...mockCropAnalysis,
-      id: `KM-${Date.now().toString().slice(-6)}`,
-      crop: crop,
-      variety: formData.cropVariety || "Hybrid Local",
-      stage: growthStage,
-      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      location: `${formData.district || 'Pune'}, ${formData.state || 'Maharashtra'}`,
-      village: formData.village || 'Local Farm',
-      farmSize: formData.farmSize ? `${formData.farmSize} Acres` : '3.5 Acres',
-      riskScore: calculatedRisk,
-      riskBand: riskBand,
-      overallHealth: overallHealth,
-      visualObservations: {
-        ...mockCropAnalysis.visualObservations,
-        image: formData.imagePreviewUrl || mockCropAnalysis.visualObservations.image,
-        spreadRate: `${spreadSpeed} spread reported by farmer`
-      }
-    };
-
-    return { data: customAnalysis, success: true };
   }
 
-  // Real FastAPI call
-  const response = await apiClient.post('/crop/analyze', formData, {
+  if (formData.imageFile instanceof File) {
+    payload.append('imageFile', formData.imageFile);
+  }
+
+  const response = await apiClient.post('/crop/analyze', payload, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
-  return response.data;
+  return { data: response.data, success: true };
 }
 
 /**

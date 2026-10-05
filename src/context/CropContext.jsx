@@ -12,7 +12,6 @@ import {
   analyzeCrop,
   getWeather,
   getMarketPrices,
-  getRecommendations,
   getAnalysisHistory,
   getFarmerProfile,
   saveFarmerProfile
@@ -58,7 +57,16 @@ export function CropProvider({ children }) {
     setError(null);
     try {
       const response = await analyzeCrop(formData);
-      const analysisResult = response.data;
+      const result = response.data;
+      const analysisResult = {
+        ...result,
+        location: result.location || [formData.village, formData.district, formData.state].filter(Boolean).join(', '),
+        riskFactors: result.factors,
+        visualObservations: {
+          ...result.visualObservations,
+          image: result.imagePresent ? formData.imagePreviewUrl : null
+        }
+      };
       setCurrentAnalysis(analysisResult);
 
       // Create history item
@@ -80,12 +88,6 @@ export function CropProvider({ children }) {
       const updatedHistory = [historyItem, ...history.filter(h => h.id !== historyItem.id)];
       setHistory(updatedHistory);
       localStorage.setItem('krishimind_history', JSON.stringify(updatedHistory));
-
-      // Fetch corresponding recommendation update
-      const recRes = await getRecommendations(analysisResult);
-      if (recRes?.data) {
-        setRecommendations(recRes.data);
-      }
 
       setIsLoading(false);
       return analysisResult;
