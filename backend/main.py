@@ -5,7 +5,7 @@ import json
 from typing import List, Optional, Tuple
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 
@@ -201,6 +201,85 @@ def assess_crop_inputs(
         concerns.append("No specific symptoms or field concerns were reported.")
 
     return score, risk_band, overall_health, factors, concerns, recommendations
+
+
+def get_sample_weather(location: str) -> dict:
+    """Return clearly identified sample weather until a provider is configured."""
+    now = datetime.now(timezone.utc)
+    forecast = []
+    conditions = [
+        ("Partly Cloudy", 28, 21, 65, 12, 78),
+        ("Light Rain", 29, 22, 60, 8, 75),
+        ("Moderate Rain", 27, 20, 70, 18, 82),
+        ("Partly Cloudy", 30, 22, 35, 2, 68),
+        ("Sunny / Clear", 31, 23, 20, 0, 62),
+    ]
+
+    for offset, (condition, temp, min_temp, rain_probability, rain_mm, humidity) in enumerate(conditions):
+        forecast_date = now.date().fromordinal(now.date().toordinal() + offset)
+        forecast.append({
+            "day": "Today" if offset == 0 else forecast_date.strftime("%a"),
+            "date": forecast_date.strftime("%d %b"),
+            "temp": temp,
+            "minTemp": min_temp,
+            "humidity": humidity,
+            "rainProb": rain_probability,
+            "rainMm": rain_mm,
+            "condition": condition,
+        })
+
+    temperature = 28
+    humidity = 78
+    rain_probability = 65
+    rainfall_mm = 12
+    humidity_level = "High" if humidity >= 75 else "Moderate" if humidity >= 60 else "Low"
+    rainfall_level = "High" if rain_probability >= 70 else "Moderate" if rain_probability >= 40 else "Low"
+    temperature_level = "High" if temperature >= 35 else "Low"
+    overall_risk = "High" if humidity_level == "High" and rainfall_level == "High" else (
+        "Moderate" if humidity_level != "Low" or rainfall_level != "Low" else "Low"
+    )
+
+    return {
+        "location": location,
+        "temperature": temperature,
+        "condition": "Partly Cloudy with Humidity",
+        "humidity": humidity,
+        "rainfall_mm": rainfall_mm,
+        "rain_probability": rain_probability,
+        "wind": {"speed_kmh": 14},
+        "forecast": forecast,
+        "agricultural_weather_risk": {
+            "overall": overall_risk,
+            "rainfall": {
+                "level": rainfall_level,
+                "explanation": f"{rain_probability}% rain probability and sample rainfall of {rainfall_mm} mm may prolong canopy moisture and wash off foliar treatments.",
+            },
+            "humidity": {
+                "level": humidity_level,
+                "explanation": f"{humidity}% relative humidity can favor fungal disease development in susceptible crops.",
+            },
+            "temperature": {
+                "level": temperature_level,
+                "explanation": "Sample daytime temperature is within a generally suitable range for many crops.",
+            },
+        },
+        "risk_explanation": "Sample conditions indicate that high humidity and possible rainfall may increase crop-health risk. Check local field conditions, maintain drainage, and avoid late-evening irrigation.",
+        "data_source": "sample_fallback",
+        "is_sample": True,
+        "timestamp": now.isoformat(),
+    }
+
+
+@app.get("/api/weather")
+def get_weather(
+    location: Optional[str] = Query(None, min_length=1, max_length=100),
+    city: Optional[str] = Query(None, min_length=1, max_length=100),
+):
+    """Return weather for a location, using labeled sample data when no provider is configured."""
+    requested_location = next((value.strip() for value in (location, city) if value and value.strip()), "Pune")
+    if not requested_location:
+        raise HTTPException(status_code=400, detail="A non-empty location or city is required.")
+    return get_sample_weather(requested_location)
 
 
 @app.get("/api/health")

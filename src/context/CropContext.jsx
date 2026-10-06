@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   mockCropAnalysis,
-  mockWeatherData,
   mockMarketData,
   mockDecisionSupportData,
   mockHistoryList,
@@ -21,7 +20,8 @@ const CropContext = createContext();
 
 export function CropProvider({ children }) {
   const [currentAnalysis, setCurrentAnalysis] = useState(mockCropAnalysis);
-  const [weather, setWeather] = useState(mockWeatherData);
+  const [weather, setWeather] = useState(null);
+  const [weatherError, setWeatherError] = useState(null);
   const [market, setMarket] = useState(mockMarketData);
   const [recommendations, setRecommendations] = useState(mockDecisionSupportData);
   const [history, setHistory] = useState(mockHistoryList);
@@ -33,17 +33,24 @@ export function CropProvider({ children }) {
   useEffect(() => {
     async function loadData() {
       try {
-        const [histRes, profRes, weathRes, mktRes] = await Promise.all([
+        const [histRes, profRes, mktRes] = await Promise.all([
           getAnalysisHistory(),
           getFarmerProfile(),
-          getWeather("Pune"),
           getMarketPrices("Tomato", "Pune")
         ]);
 
         if (histRes?.data) setHistory(histRes.data);
         if (profRes?.data) setProfile(profRes.data);
-        if (weathRes?.data) setWeather(weathRes.data);
         if (mktRes?.data) setMarket(mktRes.data);
+
+        try {
+          const weatherRes = await getWeather(profRes?.data?.district || "Pune");
+          if (weatherRes?.data) setWeather(weatherRes.data);
+          setWeatherError(null);
+        } catch (err) {
+          console.error("Error loading weather data", err);
+          setWeatherError("Weather data is currently unavailable.");
+        }
       } catch (err) {
         console.error("Error loading initial data", err);
       }
@@ -81,7 +88,7 @@ export function CropProvider({ children }) {
         riskLevel: analysisResult.overallHealth,
         status: "Under Observation",
         symptoms: formData.symptomsLabels?.join(', ') || "Brown spots, Yellowing leaves",
-        weatherCondition: `${weather.currentTemp}°C / ${weather.humidity}% Humidity`,
+        weatherCondition: `${weather?.currentTemp ?? "—"}°C / ${weather?.humidity ?? "—"}% Humidity`,
         marketPrice: `₹${market.currentPrice} / Qtl`
       };
 
@@ -115,6 +122,7 @@ export function CropProvider({ children }) {
         currentAnalysis,
         setCurrentAnalysis,
         weather,
+        weatherError,
         market,
         recommendations,
         history,

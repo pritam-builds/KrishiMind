@@ -1,18 +1,17 @@
 // src/services/api.js
 // Axios service layer prepared for seamless connection to a FastAPI backend.
-// Currently serves realistic agricultural mock data with simulated network latency.
+// Weather always uses FastAPI; other services retain their MVP mock-data toggle.
 
 import axios from 'axios';
 import {
-  mockWeatherData,
   mockMarketData,
   mockDecisionSupportData,
   mockHistoryList,
   initialFarmerProfile
 } from '../data/mockData';
 
-// Toggle between mock data and real FastAPI backend
-// When ready to connect FastAPI, set VITE_USE_MOCK_API=false in .env or change this constant to false.
+// Toggle mock data for services other than weather.
+// Set VITE_USE_MOCK_API=false in .env when those backend endpoints are ready.
 export const USE_MOCK_API = true;
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -71,13 +70,22 @@ export async function analyzeCrop(formData) {
  * Connects to FastAPI endpoint: GET /api/weather?location={location}
  */
 export async function getWeather(location = "Pune") {
-  if (USE_MOCK_API) {
-    await simulateDelay(400);
-    return { data: mockWeatherData, success: true };
-  }
-
   const response = await apiClient.get('/weather', { params: { location } });
-  return response.data;
+  const weather = response.data;
+  return {
+    data: {
+      ...weather,
+      currentTemp: weather.temperature,
+      rainProbability: weather.rain_probability,
+      windSpeed: `${weather.wind.speed_kmh} km/h`,
+      rainfallMm: weather.rainfall_mm,
+      agriculturalWeatherRisk: weather.agricultural_weather_risk,
+      riskExplanation: weather.risk_explanation,
+      dataSource: weather.data_source,
+      isSample: weather.is_sample
+    },
+    success: true
+  };
 }
 
 /**

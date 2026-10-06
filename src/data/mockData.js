@@ -94,51 +94,6 @@ export const mockCropAnalysis = {
   ]
 };
 
-export const mockWeatherData = {
-  location: "Pune, Maharashtra",
-  district: "Pune",
-  coordinates: "18.5204° N, 73.8567° E",
-  currentTemp: 28,
-  tempUnit: "°C",
-  condition: "Partly Cloudy with Humidity",
-  humidity: 78,
-  rainProbability: 65,
-  windSpeed: "14 km/h",
-  uvIndex: "Moderate (5)",
-  soilTemp: "25°C",
-  weatherRisks: [
-    {
-      title: "Rainfall Risk",
-      level: "Moderate",
-      badgeClass: "bg-amber-100 text-amber-800 border-amber-300",
-      icon: "CloudRain",
-      description: "65% rain probability over the next 36 hours may prolong leaf wetness and wash off unprotected foliar treatments."
-    },
-    {
-      title: "Humidity Risk",
-      level: "High",
-      badgeClass: "bg-red-100 text-red-800 border-red-300",
-      icon: "Droplets",
-      description: "78% relative humidity promotes rapid spore germination for fungal foliar diseases like Alternaria and downy mildew."
-    },
-    {
-      title: "Temperature Stress",
-      level: "Low",
-      badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-300",
-      icon: "Sun",
-      description: "Daytime 28°C and nighttime 21°C remain within the optimal physiological growth range for solanaceous crops."
-    }
-  ],
-  cropWeatherExplanation: "High humidity and recent rainfall may increase crop health risks for some crops. Ensuring proper field drainage and avoiding late evening irrigation can help reduce prolonged leaf wetness.",
-  forecast: [
-    { day: "Today", date: "19 Sep", temp: 28, minTemp: 21, humidity: 78, rainProb: 65, rainMm: 12, condition: "Scattered Showers" },
-    { day: "Sun", date: "20 Sep", temp: 29, minTemp: 22, humidity: 75, rainProb: 60, rainMm: 8, condition: "Light Rain" },
-    { day: "Mon", date: "21 Sep", temp: 27, minTemp: 20, humidity: 82, rainProb: 70, rainMm: 18, condition: "Moderate Rain" },
-    { day: "Tue", date: "22 Sep", temp: 30, minTemp: 22, humidity: 68, rainProb: 35, rainMm: 2, condition: "Partly Cloudy" },
-    { day: "Wed", date: "23 Sep", temp: 31, minTemp: 23, humidity: 62, rainProb: 20, rainMm: 0, condition: "Sunny / Clear" }
-  ]
-};
-
 export const mockMarketData = {
   crop: "Tomato",
   variety: "Hybrid Red / Local",
