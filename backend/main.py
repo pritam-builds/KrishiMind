@@ -282,6 +282,43 @@ def get_weather(
     return get_sample_weather(requested_location)
 
 
+@app.get("/api/market")
+def get_market(
+    crop: str = Query("Tomato", min_length=1, max_length=100),
+    location: Optional[str] = Query(None, min_length=1, max_length=100),
+    city: Optional[str] = Query(None, min_length=1, max_length=100),
+):
+    """Return explicitly labeled sample mandi figures until a live provider is connected."""
+    requested_crop = crop.strip()
+    requested_location = next((value.strip() for value in (location, city) if value and value.strip()), "Pune")
+    if not requested_crop:
+        raise HTTPException(status_code=400, detail="A non-empty crop is required.")
+    if not requested_location:
+        raise HTTPException(status_code=400, detail="A non-empty location or city is required.")
+
+    sample_prices = {
+        "tomato": {"current_price": 2850, "min_price": 2400, "max_price": 3200, "arrivals": 1450},
+        "onion": {"current_price": 2300, "min_price": 1800, "max_price": 2800, "arrivals": 920},
+        "potato": {"current_price": 1800, "min_price": 1400, "max_price": 2200, "arrivals": 1100},
+        "wheat": {"current_price": 2600, "min_price": 2400, "max_price": 2800, "arrivals": 550},
+        "cotton": {"current_price": 7200, "min_price": 6800, "max_price": 7600, "arrivals": 420},
+    }
+    prices = sample_prices.get(
+        requested_crop.lower(),
+        {"current_price": 2000, "min_price": 1800, "max_price": 2200, "arrivals": 0},
+    )
+    return {
+        "crop": requested_crop,
+        "location": requested_location,
+        **prices,
+        "market": f"{requested_location} Sample Mandi",
+        "mandi_name": f"{requested_location} Sample Mandi",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "source": "KrishiMind illustrative sample/fallback data; no live mandi API is connected.",
+        "is_sample_data": True,
+    }
+
+
 @app.get("/api/health")
 def health_check():
     """Healthcheck endpoint for monitoring server status."""

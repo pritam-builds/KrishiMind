@@ -1,6 +1,7 @@
 // src/pages/Market.jsx
-import React, { useState } from 'react';
-import { useCrop } from '../context/CropContext';
+import React, { useEffect, useState } from 'react';
+import { getMarketSnapshot } from '../services/api';
+import { mockMarketData } from '../data/mockData';
 import ChartCard from '../components/ChartCard';
 import {
   TrendingUp,
@@ -28,9 +29,61 @@ import {
 } from 'recharts';
 
 export default function Market() {
-  const { market } = useCrop();
   const [selectedCrop, setSelectedCrop] = useState("Tomato");
   const [selectedMandi, setSelectedMandi] = useState("Pune");
+  const [market, setMarket] = useState(() => ({
+    ...mockMarketData,
+    location: "Pune",
+    market: "Pune Sample Mandi",
+    minPrice: 2400,
+    maxPrice: 3200,
+    arrivalsToday: 1450,
+    source: "KrishiMind local sample fallback; no live mandi API is connected.",
+    is_sample_data: true,
+    timestamp: new Date().toISOString()
+  }));
+  const [marketError, setMarketError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadMarket() {
+      setIsLoading(true);
+      try {
+        const response = await getMarketSnapshot(selectedCrop, selectedMandi);
+        if (isActive) {
+          setMarket(response.data);
+          setMarketError(null);
+        }
+      } catch (error) {
+        console.error("Error loading market data", error);
+        if (isActive) {
+          setMarket({
+            ...mockMarketData,
+            crop: selectedCrop,
+            location: selectedMandi,
+            market: `${selectedMandi} Sample Mandi`,
+            marketLocation: `${selectedMandi} Sample Mandi`,
+            minPrice: 2400,
+            maxPrice: 3200,
+            arrivalsToday: 1450,
+            source: "KrishiMind local sample fallback; market API unavailable.",
+            is_sample_data: true,
+            timestamp: new Date().toISOString()
+          });
+          setMarketError("Market API is unavailable. Showing local sample/fallback data.");
+        }
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    }
+
+    loadMarket();
+    return () => {
+      isActive = false;
+    };
+  }, [selectedCrop, selectedMandi]);
 
   const priceTrendData = market?.priceTrendHistory || [
     { date: "06 Sep", price: 2350, arrivals: 1800 },
@@ -60,14 +113,17 @@ export default function Market() {
               <Store className="w-3.5 h-3.5 text-emerald-700" />
               <span>APMC Market Intelligence</span>
             </div>
+            <div className="inline-flex items-center px-2.5 py-1 ml-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-[11px] font-bold">
+              {market?.is_sample_data ? "Sample/Fallback Data" : "Market Data"}
+            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
               Market Intelligence
             </h1>
             <p className="text-xs sm:text-sm text-stone-500 mt-1 flex items-center gap-1.5">
-              <span>Selected Crop: <strong className="text-stone-800">{market?.crop || "Tomato"}</strong></span>
+              <span>Selected Crop: <strong className="text-stone-800">{market?.crop || selectedCrop}</strong></span>
               <span className="text-stone-300">•</span>
               <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Mandi Location: <strong className="text-stone-800">{market?.marketLocation || "Pune APMC"}</strong></span>
+              <span>Mandi Location: <strong className="text-stone-800">{market?.marketLocation || market?.market || market?.location || selectedMandi}</strong></span>
             </p>
           </div>
 
@@ -77,14 +133,10 @@ export default function Market() {
               Current Average Market Price
             </span>
             <div className="text-3xl font-extrabold text-stone-900 mt-0.5">
-              ₹{(market?.currentPrice || 2850).toLocaleString()} <span className="text-sm font-semibold text-stone-600">/ quintal</span>
+              ₹{(market?.currentPrice ?? market?.current_price ?? 0).toLocaleString()} <span className="text-sm font-semibold text-stone-600">/ quintal</span>
             </div>
-            <div className="flex items-center sm:justify-end gap-2 mt-1 text-xs">
-              <span className="text-stone-500">Previous: ₹{market?.previousPrice || 2620}</span>
-              <span className="inline-flex items-center text-emerald-700 font-bold bg-emerald-100/80 px-2 py-0.5 rounded-md">
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                +{market?.priceChangePct || 8.8}%
-              </span>
+            <div className="mt-1 text-xs text-stone-600">
+              Range: ₹{(market?.minPrice ?? market?.min_price ?? 0).toLocaleString()}–₹{(market?.maxPrice ?? market?.max_price ?? 0).toLocaleString()} / quintal
             </div>
           </div>
         </div>
@@ -94,18 +146,30 @@ export default function Market() {
           <div className="flex items-center gap-3">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 font-bold text-xs">
               <TrendingUp className="w-4 h-4 text-emerald-700" />
-              <span>Market Trend: {market?.trend || "Trending upward"}</span>
+              <span>Arrivals: {Number(market?.arrivalsToday ?? market?.arrivals ?? 0).toLocaleString()} quintals</span>
             </div>
             <span className="text-xs text-stone-500 hidden sm:inline">
-              Tightening arrivals supporting local mandi pricing
+              Illustrative sample figures; not live mandi prices
             </span>
           </div>
 
           <div className="text-xs text-stone-500 flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 text-stone-400" />
-            <span>Updated today from Maharashtra APMC Portal</span>
+            <span>
+              {isLoading
+                ? "Loading market data…"
+                : `Timestamp: ${market?.timestamp ? new Date(market.timestamp).toLocaleString() : "Unavailable"}`}
+            </span>
           </div>
         </div>
+        <p className="mt-2 text-[11px] text-stone-500">
+          Source: {market?.source || "Sample/fallback data; no live mandi API is connected."}
+        </p>
+        {marketError && (
+          <p role="status" className="mt-2 text-xs font-medium text-amber-800">
+            {marketError}
+          </p>
+        )}
       </div>
 
       {/* 14-Day Price Line Chart */}

@@ -103,6 +103,27 @@ export async function getMarketPrices(crop = "Tomato", location = "Pune") {
 }
 
 /**
+ * Fetch the current market snapshot directly for the Market Intelligence page.
+ * This deliberately bypasses USE_MOCK_API so unrelated consumers keep their existing behavior.
+ */
+export async function getMarketSnapshot(crop = "Tomato", location = "Pune") {
+  const response = await apiClient.get('/market', { params: { crop, location } });
+  const market = response.data;
+  return {
+    data: {
+      ...market,
+      currentPrice: market.current_price,
+      minPrice: market.min_price,
+      maxPrice: market.max_price,
+      marketLocation: market.market || market.mandi_name,
+      arrivalsToday: market.arrivals,
+      isSample: market.is_sample_data
+    },
+    success: true
+  };
+}
+
+/**
  * 4. Get Decision Support Recommendations
  * Connects to FastAPI endpoint: POST /api/recommendation
  */
