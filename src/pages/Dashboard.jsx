@@ -5,6 +5,7 @@ import { useCrop } from '../context/CropContext';
 import StatCard from '../components/StatCard';
 import CropCard from '../components/CropCard';
 import CropForm from '../components/CropForm';
+import { useI18n } from '../i18n';
 import {
   Sparkles,
   MapPin,
@@ -24,6 +25,7 @@ import {
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentAnalysis, weather, market, history, profile } = useCrop();
+  const { t, formatDate } = useI18n();
 
   const isAnalyzeMode = searchParams.get('action') === 'analyze';
 
@@ -42,6 +44,12 @@ export default function Dashboard() {
     if (hour < 17) return "Good afternoon";
     return "Good evening";
   };
+  const displayDate = (item) => {
+    const parsedDate = new Date(item.assessedAt || item.date);
+    return Number.isNaN(parsedDate.getTime())
+      ? item.date
+      : formatDate(parsedDate, { dateStyle: 'medium' });
+  };
 
   return (
     <div className="space-y-8">
@@ -50,7 +58,7 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
-              {getGreeting()}, {profile?.name?.split(' ')[0] || 'Farmer'}
+              {t(getGreeting())}, {profile?.name?.split(' ')[0] || t('Farmer')}
             </h1>
             <span className="text-xl">🌱</span>
           </div>
@@ -71,7 +79,7 @@ export default function Dashboard() {
               className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm py-3 px-5 rounded-2xl shadow-sm shadow-emerald-800/20 transition-all hover:scale-[1.02]"
             >
               <Sparkles className="w-4 h-4 text-emerald-200" />
-              <span>+ Analyze New Crop</span>
+              <span>{t("+ Analyze New Crop")}</span>
             </button>
           ) : (
             <button
@@ -79,7 +87,7 @@ export default function Dashboard() {
               onClick={() => toggleAnalyzeMode(false)}
               className="inline-flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs py-2.5 px-4 rounded-xl border border-stone-200 transition-colors"
             >
-              <span>← Back to Dashboard</span>
+              <span>{t("← Back to Dashboard")}</span>
             </button>
           )}
         </div>
@@ -97,7 +105,7 @@ export default function Dashboard() {
           }`}
         >
           <Activity className="w-3.5 h-3.5 text-emerald-700" />
-          <span>Dashboard Overview</span>
+          <span>{t("Dashboard Overview")}</span>
         </button>
         <button
           type="button"
@@ -109,7 +117,7 @@ export default function Dashboard() {
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Tell Us About Your Crop (Input Form)</span>
+          <span>{t("Tell Us About Your Crop (Input Form)")}</span>
         </button>
       </div>
 
@@ -117,12 +125,12 @@ export default function Dashboard() {
       {isAnalyzeMode ? (
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-stone-900">Crop Health & Observation Form</h2>
+            <h2 className="text-xl font-bold text-stone-900">{t("Crop Health & Observation Form")}</h2>
             <button
               onClick={() => toggleAnalyzeMode(false)}
               className="text-xs text-stone-500 hover:text-stone-800 underline"
             >
-              Cancel
+              {t("Cancel")}
             </button>
           </div>
           <CropForm onCancel={() => toggleAnalyzeMode(false)} />
@@ -135,38 +143,38 @@ export default function Dashboard() {
             {/* Crop Health Card */}
             <StatCard
               title="Crop Health"
-              value={currentAnalysis?.overallHealth || "Moderate Risk"}
-              subValue={`Risk Score: ${currentAnalysis?.riskScore || 72}/100`}
+              value={t(currentAnalysis?.overallHealth || "Moderate Risk")}
+              subValue={`${t("Risk Score")}: ${currentAnalysis?.riskScore || 72}/100`}
               icon={Activity}
-              badgeText="Action Recommended"
+              badgeText={t("Action Recommended")}
               badgeColor="bg-amber-100 text-amber-800 border border-amber-200"
-              trendText="Foliage Under Check"
+              trendText={t("Foliage Under Check")}
               trendType="neutral"
               onClick={() => {}}
             />
 
             {/* Weather Card */}
             <StatCard
-              title="Weather"
+              title={t("Weather")}
               value={`${weather?.currentTemp || 28}°C`}
-              subValue={`${weather?.rainProbability || 65}% rain probability`}
+              subValue={`${weather?.rainProbability || 65}% ${t("rain probability")}`}
               icon={CloudSun}
-              badgeText="78% Humidity"
+              badgeText={`78% ${t("Humidity")}`}
               badgeColor="bg-blue-100 text-blue-800 border border-blue-200"
-              trendText="Rain anticipated"
+              trendText={t("Rain anticipated")}
               trendType="up"
               onClick={() => {}}
             />
 
             {/* Market Card */}
             <StatCard
-              title="Market"
+              title={t("Market")}
               value={`₹${market?.currentPrice?.toLocaleString() || '2,850'}/Qtl`}
               subValue={`${market?.crop || 'Tomato'} • Pune APMC`}
               icon={TrendingUp}
               badgeText={`+${market?.priceChangePct || 8.8}%`}
               badgeColor="bg-emerald-100 text-emerald-800 border border-emerald-200"
-              trendText="Trending upward"
+              trendText={t("Trending upward")}
               trendType="up"
               onClick={() => {}}
             />
@@ -177,10 +185,10 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-stone-900">
-                  Your Latest Crop Analysis
+                  {t("Your Latest Crop Analysis")}
                 </h2>
                 <p className="text-xs text-stone-500">
-                  Field observations and environmental risk assessment
+                  {t("Field observations and environmental risk assessment")}
                 </p>
               </div>
 
@@ -188,7 +196,7 @@ export default function Dashboard() {
                 to="/crop-analysis"
                 className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
               >
-                <span>Full Assessment Report</span>
+                <span>{t("Full Assessment Report")}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -196,13 +204,13 @@ export default function Dashboard() {
             <CropCard
               crop={currentAnalysis?.crop || "Tomato"}
               variety={currentAnalysis?.variety || "Abhinav (F1)"}
-              stage={currentAnalysis?.stage || "Fruiting"}
+              stage={t(currentAnalysis?.stage || "Fruiting")}
               location={currentAnalysis?.location || "Pune, Maharashtra"}
-              date={currentAnalysis?.date || "19 Sep 2026"}
+              date={currentAnalysis?.date ? formatDate(new Date(currentAnalysis.date), { dateStyle: 'medium' }) : "19 Sep 2026"}
               riskScore={currentAnalysis?.riskScore || 72}
-              riskBand={currentAnalysis?.riskBand || "Moderate–High Risk"}
+              riskBand={t(currentAnalysis?.riskBand || "Moderate–High Risk")}
               showAction={true}
-              actionText="View Detailed Health Assessment & Risk Factors"
+              actionText={t("View Detailed Health Assessment & Risk Factors")}
               actionLink="/crop-analysis"
             />
           </div>
@@ -211,10 +219,10 @@ export default function Dashboard() {
           <div>
             <div className="mb-4">
               <h2 className="text-lg sm:text-xl font-bold text-stone-900">
-                Important Factors to Consider
+                {t("Important Factors to Consider")}
               </h2>
               <p className="text-xs text-stone-500">
-                Key environmental and crop indicators synthesized by KrishiMind
+                {t("Key environmental and crop indicators synthesized by KrishiMind")}
               </p>
             </div>
 
@@ -222,60 +230,60 @@ export default function Dashboard() {
               {/* Factor 1: Humidity */}
               <div className="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Microclimate</span>
+                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t("Microclimate")}</span>
                   <Droplets className="w-4 h-4 text-blue-600" />
                 </div>
-                <h3 className="text-sm font-bold text-stone-900">78% Humidity</h3>
+                <h3 className="text-sm font-bold text-stone-900">78% {t("Humidity")}</h3>
                 <span className="inline-block mt-1 text-[11px] px-2 py-0.5 rounded-md font-semibold bg-red-50 text-red-700 border border-red-200">
-                  High Risk for Spores
+                  {t("High Risk for Spores")}
                 </span>
                 <p className="text-xs text-stone-500 mt-2 leading-relaxed">
-                  Elevated moisture levels promote leaf spot fungal germination.
+                  {t("Elevated moisture levels promote leaf spot fungal germination.")}
                 </p>
               </div>
 
               {/* Factor 2: Rainfall */}
               <div className="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Precipitation</span>
+                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t("Precipitation")}</span>
                   <CloudRain className="w-4 h-4 text-indigo-600" />
                 </div>
-                <h3 className="text-sm font-bold text-stone-900">65% Rain Prob.</h3>
+                <h3 className="text-sm font-bold text-stone-900">65% {t("Rain Probability")}</h3>
                 <span className="inline-block mt-1 text-[11px] px-2 py-0.5 rounded-md font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                  Moderate Risk
+                  {t("Moderate Risk")}
                 </span>
                 <p className="text-xs text-stone-500 mt-2 leading-relaxed">
-                  Upcoming showers may prolong foliar wetness; delay wash-off prone sprays.
+                  {t("Upcoming showers may prolong foliar wetness; delay wash-off prone sprays.")}
                 </p>
               </div>
 
               {/* Factor 3: Crop stage */}
               <div className="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Crop Stage</span>
+                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t("Crop Stage")}</span>
                   <Sprout className="w-4 h-4 text-emerald-600" />
                 </div>
-                <h3 className="text-sm font-bold text-stone-900">Fruiting Stage</h3>
+                <h3 className="text-sm font-bold text-stone-900">{t("Fruiting Stage")}</h3>
                 <span className="inline-block mt-1 text-[11px] px-2 py-0.5 rounded-md font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                  Sensitive Period
+                  {t("Sensitive Period")}
                 </span>
                 <p className="text-xs text-stone-500 mt-2 leading-relaxed">
-                  Protecting healthy canopy maintains fruit bulking and prevents sunscald.
+                  {t("Protecting healthy canopy maintains fruit bulking and prevents sunscald.")}
                 </p>
               </div>
 
               {/* Factor 4: Market trend */}
               <div className="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Market Dynamics</span>
+                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t("Market Dynamics")}</span>
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
                 </div>
                 <h3 className="text-sm font-bold text-stone-900">+8.8% Upward</h3>
                 <span className="inline-block mt-1 text-[11px] px-2 py-0.5 rounded-md font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Favorable Mandi Rate
+                  {t("Favorable Mandi Rate")}
                 </span>
                 <p className="text-xs text-stone-500 mt-2 leading-relaxed">
-                  ₹2,850/qtl at Pune APMC; monitor harvest timing as fruit matures.
+                  {t("₹2,850/qtl at Pune APMC; monitor harvest timing as fruit matures.")}
                 </p>
               </div>
             </div>
@@ -286,10 +294,10 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-stone-900">
-                  Recent Activity
+                  {t("Recent Activity")}
                 </h2>
                 <p className="text-xs text-stone-500">
-                  Historical field records and past crop assessments
+                  {t("Historical field records and past crop assessments")}
                 </p>
               </div>
 
@@ -297,7 +305,7 @@ export default function Dashboard() {
                 to="/history"
                 className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
               >
-                <span>View Full History ({history?.length || 0})</span>
+                <span>{t("View Full History")} ({history?.length || 0})</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -316,10 +324,10 @@ export default function Dashboard() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="text-sm font-bold text-stone-900">{item.crop}</h4>
-                          <span className="text-[11px] text-stone-500 font-medium">({item.stage})</span>
+                          <span className="text-[11px] text-stone-500 font-medium">({t(item.stage)})</span>
                         </div>
                         <p className="text-xs text-stone-500 mt-0.5 flex items-center gap-2">
-                          <span>{item.date}</span>
+                          <span>{displayDate(item)}</span>
                           <span>•</span>
                           <span>{item.location}</span>
                         </p>
@@ -336,14 +344,14 @@ export default function Dashboard() {
                             : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         }`}
                       >
-                        {item.riskLevel || 'Moderate Risk'}
+                        {t(item.riskLevel || 'Moderate Risk')}
                       </span>
 
                       <Link
                         to="/crop-analysis"
                         className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline inline-flex items-center gap-1"
                       >
-                        Details →
+                        {t("Details →")}
                       </Link>
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 // src/components/RiskCard.jsx
 import React from 'react';
 import { AlertTriangle, Droplets, CloudRain, Sprout, ShieldAlert } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 export default function RiskCard({
   title,
@@ -10,6 +11,7 @@ export default function RiskCard({
   description,
   icon
 }) {
+  const { t } = useI18n();
   const getIcon = () => {
     if (title.toLowerCase().includes('humidity')) return Droplets;
     if (title.toLowerCase().includes('rain')) return CloudRain;
@@ -29,17 +31,17 @@ export default function RiskCard({
               <IconComponent className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-stone-900">{title}</h4>
-              {metric && <p className="text-xs text-stone-500 font-medium">{metric}</p>}
+              <h4 className="text-sm font-bold text-stone-900">{t(title)}</h4>
+              {metric && <p className="text-xs text-stone-500 font-medium">{t(metric)}</p>}
             </div>
           </div>
           {status && (
             <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${badgeColor || 'bg-stone-100 text-stone-700 border-stone-200'}`}>
-              {status}
+              {t(status)}
             </span>
           )}
         </div>
-        <p className="text-xs text-stone-600 leading-relaxed">{description}</p>
+        <p className="text-xs text-stone-600 leading-relaxed">{t(description)}</p>
       </div>
     </div>
   );

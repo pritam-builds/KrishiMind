@@ -1,6 +1,7 @@
 // src/components/MobileNav.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useI18n } from '../i18n';
 import {
   LayoutDashboard,
   PlusCircle,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 
 export default function MobileNav() {
+  const { t } = useI18n();
   const items = [
     { name: "Home", path: "/farmer", icon: LayoutDashboard },
     { name: "Analyze", path: "/farmer?action=analyze", icon: PlusCircle, isPrimary: true },
@@ -51,7 +53,7 @@ export default function MobileNav() {
                 >
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] mt-0.5 font-medium">{item.name}</span>
+                <span className="text-[10px] mt-0.5 font-medium">{t(item.name)}</span>
               </>
             )}
           </NavLink>

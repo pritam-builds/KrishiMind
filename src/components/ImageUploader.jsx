@@ -11,6 +11,7 @@ import {
   Info,
   Sparkles
 } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 export default function ImageUploader({
   imagePreview,
@@ -18,6 +19,7 @@ export default function ImageUploader({
   onImageRemoved,
   required = false
 }) {
+  const { t } = useI18n();
   const [isDragging, setIsDragging] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef(null);
@@ -85,10 +87,10 @@ export default function ImageUploader({
         </div>
         <div className="text-xs space-y-1">
           <p className="font-bold text-emerald-900 text-xs sm:text-sm">
-            Important Note on Crop Health Assessment
+            {t("Important Note on Crop Health Assessment")}
           </p>
           <p className="text-emerald-800 leading-relaxed">
-            The crop photo provides visual evidence for spotting foliar symptoms, but it is <strong>one input among several</strong> and <strong>NOT the only basis</strong> for the assessment. KrishiMind evaluates your photo alongside your entered symptoms, growth stage, soil, and weather signals.
+            {t("A valid crop photo can be attached to your assessment, but visual disease detection is not connected. The risk indicator uses your selected symptoms, growth stage, and reported field conditions only.")}
           </p>
         </div>
       </div>
@@ -127,10 +129,10 @@ export default function ImageUploader({
           </div>
 
           <h4 className="text-sm sm:text-base font-bold text-stone-900">
-            Upload a clear photo of your crop or affected leaf
+            {t("Upload a clear photo of your crop or affected leaf")}
           </h4>
           <p className="text-xs text-stone-500 mt-1 max-w-md mx-auto">
-            Take a well-lit photo showing the leaves, stem, or fruit with visible signs. Drag and drop here or choose an option:
+            {t("Attach a clear JPG, PNG, or WEBP photo as supporting input. It will not be analyzed for disease. Drag and drop here or choose an option:")}
           </p>
 
           {/* Upload actions */}
@@ -141,7 +143,7 @@ export default function ImageUploader({
               className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-colors shadow-xs"
             >
               <ImageIcon className="w-4 h-4" />
-              <span>Browse Photos</span>
+              <span>{t("Browse Photos")}</span>
             </button>
 
             <button
@@ -150,7 +152,7 @@ export default function ImageUploader({
               className="inline-flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold py-2.5 px-4 rounded-xl transition-colors border border-stone-300"
             >
               <Camera className="w-4 h-4 text-stone-600" />
-              <span>Take Photo</span>
+              <span>{t("Take Photo")}</span>
             </button>
 
             <button
@@ -159,12 +161,12 @@ export default function ImageUploader({
               className="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-medium py-2.5 px-3.5 rounded-xl transition-colors border border-amber-200"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>Use Demo Field Photo</span>
+              <span>{t("Use Demo Field Photo")}</span>
             </button>
           </div>
 
           <div className="mt-3 text-[11px] text-stone-400">
-            JPG, PNG or WEBP up to 15MB • Optional but recommended
+            {t("JPG, PNG or WEBP up to 15MB • Optional but recommended")}
           </div>
         </div>
       ) : (
@@ -175,20 +177,20 @@ export default function ImageUploader({
             <div className="relative rounded-2xl overflow-hidden bg-stone-900 border border-stone-200 w-full sm:w-64 aspect-4/3 shrink-0 flex items-center justify-center shadow-xs group">
               <img
                 src={imagePreview}
-                alt="Uploaded crop preview"
+                alt={t("Uploaded crop preview")}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute top-2 left-2">
                 <span className="bg-emerald-700/95 backdrop-blur-xs text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-xs">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-200" />
-                  <span>Photo Ready</span>
+                  <span>{t("Photo Ready")}</span>
                 </span>
               </div>
               <button
                 type="button"
                 onClick={onImageRemoved}
-                title="Remove photo"
-                aria-label="Remove image"
+                title={t("Remove photo")}
+                aria-label={t("Remove image")}
                 className="absolute top-2 right-2 p-1.5 bg-stone-900/80 hover:bg-stone-900 text-white rounded-lg transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -200,14 +202,14 @@ export default function ImageUploader({
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md">
-                    Supporting Input Attached
+                    {t("Supporting Input Attached")}
                   </span>
                 </div>
                 <h5 className="text-sm font-bold text-stone-900">
-                  Crop visual evidence captured
+                  {t("Crop photo attached")}
                 </h5>
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  This photo will be analyzed as visual evidence alongside your symptom choices and environment metrics. You can replace or remove it at any time.
+                  {t("The photo is accepted as supporting input but is not analyzed for disease. Your risk indicator uses reported symptoms and field conditions. You can replace or remove the photo at any time.")}
                 </p>
               </div>
 
@@ -219,7 +221,7 @@ export default function ImageUploader({
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-300 transition-colors"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Replace Photo</span>
+                  <span>{t("Replace Photo")}</span>
                 </button>
 
                 <button
@@ -228,7 +230,7 @@ export default function ImageUploader({
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 px-3.5 py-2 rounded-xl border border-stone-200 transition-colors"
                 >
                   <Camera className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Retake with Camera</span>
+                  <span>{t("Retake with Camera")}</span>
                 </button>
 
                 <button
@@ -237,7 +239,7 @@ export default function ImageUploader({
                   className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 hover:text-rose-800 hover:bg-rose-50 px-3 py-2 rounded-xl border border-rose-200 transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
-                  <span>Remove Photo</span>
+                  <span>{t("Remove Photo")}</span>
                 </button>
               </div>
             </div>
@@ -248,7 +250,7 @@ export default function ImageUploader({
       {errorMsg && (
         <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700 font-medium">
           <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{errorMsg}</span>
+          <span>{t(errorMsg)}</span>
         </div>
       )}
     </div>

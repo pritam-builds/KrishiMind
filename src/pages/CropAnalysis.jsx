@@ -1,6 +1,7 @@
 // src/pages/CropAnalysis.jsx
 import React, { useState } from 'react';
 import { useCrop } from '../context/CropContext';
+import { useI18n } from '../i18n';
 import RiskGauge from '../components/RiskGauge';
 import RiskCard from '../components/RiskCard';
 import {
@@ -23,6 +24,7 @@ import { Link } from 'react-router-dom';
 
 export default function CropAnalysis() {
   const { currentAnalysis } = useCrop();
+  const { t } = useI18n();
 
   const [checklist, setChecklist] = useState(
     currentAnalysis?.whatToCheckNext || [
@@ -50,23 +52,23 @@ export default function CropAnalysis() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-full text-xs font-bold mb-2">
             <ShieldAlert className="w-3.5 h-3.5 text-amber-700" />
-            <span>Potential Crop Health Risk</span>
+            <span>{t("Potential Crop Health Risk")}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
-            Crop Health & Risk Assessment
+            {t("Crop Health & Risk Assessment")}
           </h1>
           <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl">
-            Visual symptoms and environmental conditions indicate a possible crop health issue.
+            {t("A transparent risk indicator calculated from the crop details and field observations you submitted.")}
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-4 text-xs text-stone-500">
-            <span className="font-bold text-stone-800">Crop: {currentAnalysis?.crop || "Tomato"}</span>
+            <span className="font-bold text-stone-800">{t("Crop:")} {currentAnalysis?.crop || "Tomato"}</span>
             <span>•</span>
-            <span>Variety: {currentAnalysis?.variety || "Abhinav (F1)"}</span>
+            <span>{t("Variety:")} {t(currentAnalysis?.variety || "Abhinav (F1)")}</span>
             <span>•</span>
-            <span>Stage: <span className="font-semibold text-emerald-800">{currentAnalysis?.stage || "Fruiting"}</span></span>
+            <span>{t("Stage:")} <span className="font-semibold text-emerald-800">{t(currentAnalysis?.stage || "Fruiting")}</span></span>
             <span>•</span>
-            <span>Location: {currentAnalysis?.location || "Pune, Maharashtra"}</span>
+            <span>{t("Location:")} {currentAnalysis?.location || "Pune, Maharashtra"}</span>
           </div>
         </div>
 
@@ -75,7 +77,7 @@ export default function CropAnalysis() {
             to="/recommendation"
             className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-bold py-3 px-5 rounded-2xl shadow-sm transition-all"
           >
-            <span>Decision Support</span>
+            <span>{t("Decision Support")}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
@@ -83,7 +85,7 @@ export default function CropAnalysis() {
             className="inline-flex items-center justify-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold py-2.5 px-4 rounded-xl border border-stone-200 transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>New Analysis</span>
+            <span>{t("New Analysis")}</span>
           </Link>
         </div>
       </div>
@@ -101,11 +103,11 @@ export default function CropAnalysis() {
                   A
                 </div>
                 <h3 className="text-base font-bold text-stone-900">
-                  Visual Observation
+                  {t("Photo & Reported Observations")}
                 </h3>
               </div>
               <span className="text-xs text-stone-500 font-medium">
-                {currentAnalysis?.imagePresent ? "Photo Attached" : "No Photo Attached"}
+                {t(currentAnalysis?.imagePresent ? "Photo Attached" : "No Photo Attached")}
               </span>
             </div>
 
@@ -116,17 +118,17 @@ export default function CropAnalysis() {
                   <>
                     <img
                       src={currentAnalysis.visualObservations.image}
-                      alt="Farmer-provided crop photo"
+                      alt={t("Farmer-provided crop photo")}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute bottom-2 left-2 right-2 bg-stone-900/80 backdrop-blur-sm text-white text-[11px] px-2.5 py-1.5 rounded-xl flex items-center justify-between">
-                      <span className="font-medium">Farmer-Provided Photo</span>
+                      <span className="font-medium">{t("Farmer-Provided Photo")}</span>
                       <span className="text-emerald-300 font-semibold">{currentAnalysis?.crop || "Crop"}</span>
                     </div>
                   </>
                 ) : (
                   <div className="p-6 text-center text-sm text-stone-300">
-                    No photo was provided for this assessment.
+                    {t("No photo was provided for this assessment.")}
                   </div>
                 )}
               </div>
@@ -134,7 +136,7 @@ export default function CropAnalysis() {
               {/* Farmer-Reported Concerns */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                  Farmer-Reported Concerns
+                  {t("Farmer-Reported Concerns")}
                 </h4>
 
                 <div className="space-y-2">
@@ -143,28 +145,28 @@ export default function CropAnalysis() {
                       key={idx}
                       className="p-3 bg-stone-50 rounded-xl border border-stone-200/70"
                     >
-                      <span className="text-xs font-bold text-stone-900">{concern}</span>
+                      <span className="text-xs font-bold text-stone-900">{t(concern)}</span>
                     </div>
                   ))}
                   {(!currentAnalysis?.concerns || currentAnalysis.concerns.length === 0) && (
                     <p className="p-3 bg-stone-50 rounded-xl border border-stone-200/70 text-[11px] text-stone-600">
-                      No specific concerns were reported.
+                      {t("No specific concerns were reported.")}
                     </p>
                   )}
                 </div>
 
                 <div className="text-xs text-stone-500 font-medium pt-1">
-                  Spread rate: <strong className="text-stone-800">{currentAnalysis?.visualObservations?.spreadRate || "Moderately spreading"}</strong>
+                  {t("Spread rate:")} <strong className="text-stone-800">{t(currentAnalysis?.visualObservations?.spreadRate || "Not reported")}</strong>
                 </div>
                 <p className="text-[11px] text-stone-500">
-                  Photo analysis status: {currentAnalysis?.imageAnalysisStatus || "NOT_CONNECTED"}. The image is not analyzed by AI.
+                  {t("Photo analysis status:")} {t(currentAnalysis?.imageAnalysisStatus || "NOT_CONNECTED")}. {t("The image is not analyzed by AI.")}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="mt-5 pt-3 border-t border-stone-100 text-[11px] text-stone-500">
-            The risk indicator is calculated from the submitted crop details and farmer-reported field observations.
+            {t("The risk indicator is calculated from the submitted crop details and farmer-reported field observations.")}
           </div>
         </div>
 
@@ -175,8 +177,8 @@ export default function CropAnalysis() {
           <RiskGauge
             score={currentAnalysis?.riskScore || 72}
             label={currentAnalysis?.riskBand || "Moderate–High Risk"}
-            title="Crop Health Risk Assessment"
-            disclaimer="Confidence depends on image quality, crop stage and available field information. This system provides decision support, not guaranteed disease detection."
+            title={t("Crop Health Risk Assessment")}
+            disclaimer={t(currentAnalysis?.disclaimer || "This uncertain rule-based indicator uses farmer-reported inputs only. It is not a guaranteed diagnosis, and uploaded images are not analyzed.")}
           />
         </div>
       </div>
@@ -191,10 +193,10 @@ export default function CropAnalysis() {
           </div>
           <div>
             <h3 className="text-base font-bold text-stone-900">
-              Contributing Risk Factors
+              {t("Contributing Risk Factors")}
             </h3>
             <p className="text-xs text-stone-500">
-              Environmental, growth stage, and symptomatic indicators compounding current risk
+              {t("Environmental, growth stage, and symptomatic indicators compounding current risk")}
             </p>
           </div>
         </div>
@@ -208,11 +210,11 @@ export default function CropAnalysis() {
           ]).map((factor, idx) => (
             <RiskCard
               key={idx}
-              title={factor.title}
+              title={t(factor.title)}
               metric={factor.metric}
-              status={factor.status}
+              status={t(factor.status)}
               badgeColor={factor.badgeColor}
-              description={factor.description}
+              description={t(factor.description)}
             />
           ))}
         </div>
@@ -227,20 +229,20 @@ export default function CropAnalysis() {
             D
           </div>
           <h3 className="text-base font-bold text-stone-900">
-            What May Be Happening?
+            {t("What May Be Happening?")}
           </h3>
         </div>
 
         <p className="text-sm text-stone-800 leading-relaxed font-medium">
-          {currentAnalysis?.whatMayBeHappening ||
-            "The observed leaf spots combined with recent rainfall and humid conditions may indicate increased risk of a fungal-related crop health issue (such as early blight tendencies). Visual symptoms and environmental conditions indicate a possible crop health issue."
+          {t(currentAnalysis?.whatMayBeHappening ||
+          "No specific disease is identified. The indicator summarizes reported symptoms and field conditions for follow-up inspection.")
           }
         </p>
 
         <div className="mt-4 p-3 bg-white rounded-xl border border-stone-200 text-xs text-stone-600 flex items-start gap-2.5">
           <Info className="w-4 h-4 text-stone-500 shrink-0 mt-0.5" />
           <p>
-            <strong>Decision Support Note:</strong> KrishiMind does not claim a definitive or guaranteed disease diagnosis. Plant stresses often exhibit overlapping symptoms with nutritional deficiencies or bacterial blemishes. Always correlate with on-field tactile inspection.
+            <strong>{t("Decision Support Note:")}</strong> {t("KrishiMind does not claim a definitive or guaranteed disease diagnosis. Plant stresses often exhibit overlapping symptoms with nutritional deficiencies or bacterial blemishes. Always correlate with on-field tactile inspection.")}
           </p>
         </div>
       </div>
@@ -256,16 +258,16 @@ export default function CropAnalysis() {
             </div>
             <div>
               <h3 className="text-base font-bold text-stone-900">
-                What To Check Next
+                {t("What To Check Next")}
               </h3>
               <p className="text-xs text-stone-500">
-                Actionable inspection steps to verify field conditions
+                {t("Actionable inspection steps to verify field conditions")}
               </p>
             </div>
           </div>
 
           <div className="text-xs font-semibold px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full self-start sm:self-auto">
-            {completedCount} of {checklist.length} Inspected
+            {completedCount} {t("of")} {checklist.length} {t("Inspected")}
           </div>
         </div>
 
@@ -283,7 +285,7 @@ export default function CropAnalysis() {
               <button
                 type="button"
                 className="mt-0.5 shrink-0 text-stone-400 hover:text-emerald-600 transition-colors"
-                aria-label={item.checked ? "Mark uninspected" : "Mark inspected"}
+                aria-label={item.checked ? t("Mark uninspected") : t("Mark inspected")}
               >
                 {item.checked ? (
                   <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -293,7 +295,7 @@ export default function CropAnalysis() {
               </button>
               <div className="flex-1 min-w-0">
                 <span className={`text-xs font-medium leading-relaxed ${item.checked ? 'line-through text-stone-400' : 'text-stone-800'}`}>
-                  {item.text}
+                  {t(item.text)}
                 </span>
               </div>
             </div>
@@ -303,14 +305,14 @@ export default function CropAnalysis() {
         {/* Footer Link to Decision Support */}
         <div className="mt-6 pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="text-xs text-stone-500">
-            Synthesize this assessment with upcoming weather and local mandi prices
+            {t("Synthesize this assessment with upcoming weather and local mandi prices")}
           </span>
 
           <Link
             to="/recommendation"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-xs transition-colors"
           >
-            <span>Proceed to Decision Support</span>
+            <span>{t("Proceed to Decision Support")}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

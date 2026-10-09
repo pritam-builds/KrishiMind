@@ -1,6 +1,7 @@
 // src/pages/Landing.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useI18n } from '../i18n';
 import {
   Sprout,
   Activity,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function Landing() {
+  const { t, language, setLanguage } = useI18n();
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col justify-between">
       {/* Top Header */}
@@ -26,23 +28,34 @@ export default function Landing() {
             </div>
             <div>
               <span className="text-xl font-extrabold text-stone-900 tracking-tight">KrishiMind</span>
-              <p className="text-xs font-semibold text-emerald-700">AI-powered crop health & farm decision support</p>
+              <p className="text-xs font-semibold text-emerald-700">{t("Rule-based crop risk & farm decision support")}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
+            <label className="sr-only" htmlFor="landing-language">{t("Select language")}</label>
+            <select
+              id="landing-language"
+              value={language}
+              onChange={(event) => setLanguage(event.target.value)}
+              className="text-xs font-semibold text-stone-700 bg-white border border-stone-200 rounded-xl px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            >
+              <option value="en">English</option>
+              <option value="mr">मराठी</option>
+              <option value="hi">हिन्दी</option>
+            </select>
             <Link
               to="/farmer"
               className="text-xs font-bold text-stone-700 hover:text-emerald-800 px-3 py-2 rounded-xl hover:bg-stone-100 transition-colors hidden sm:inline-block"
             >
-              Farmer Portal
+              {t("Farmer Portal")}
             </Link>
             <Link
               to="/farmer?action=analyze"
               className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm transition-all"
             >
               <Sparkles className="w-4 h-4 text-emerald-200" />
-              <span>Analyze My Crop</span>
+              <span>{t("Analyze My Crop")}</span>
             </Link>
           </div>
         </div>
@@ -58,20 +71,20 @@ export default function Landing() {
             {/* Tagline pill */}
             <div className="inline-flex items-center gap-2 bg-emerald-100/80 border border-emerald-200/80 text-emerald-900 px-4 py-1.5 rounded-full text-xs font-bold mb-6">
               <Sprout className="w-4 h-4 text-emerald-700" />
-              AI-powered crop health and farm decision support
+              {t("Crop risk assessment and farm decision support")}
             </div>
 
             {/* Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-stone-900 tracking-tight leading-[1.15] mb-6">
-              Understand Your Crop. <br className="hidden sm:inline" />
+              {t("Understand Your Crop.")} <br className="hidden sm:inline" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700">
-                Decide With Better Information.
+                {t("Decide With Better Information.")}
               </span>
             </h1>
 
             {/* Description */}
             <p className="text-base sm:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed mb-8">
-              Add your crop details, observations and a photo to assess crop health, weather risk and market conditions.
+              {t("Add crop details, selected symptoms, and field observations for a transparent crop-health risk indicator. Weather and market information are available separately.")}
             </p>
 
             {/* CTA Buttons */}
@@ -80,7 +93,7 @@ export default function Landing() {
                 to="/farmer?action=analyze"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-base py-3.5 px-8 rounded-2xl shadow-lg shadow-emerald-800/25 transition-all hover:translate-y-[-1px]"
               >
-                <span>Start Crop Check</span>
+                <span>{t("Start Crop Check")}</span>
                 <ArrowRight className="w-5 h-5 text-emerald-200" />
               </Link>
 
@@ -88,7 +101,7 @@ export default function Landing() {
                 to="/farmer"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-100 text-stone-800 font-bold text-base py-3.5 px-7 rounded-2xl border border-stone-300 shadow-xs transition-all"
               >
-                <span>Explore Dashboard</span>
+                <span>{t("Explore Dashboard")}</span>
               </Link>
             </div>
 
@@ -98,31 +111,31 @@ export default function Landing() {
                 {/* Visual Indicator 1 */}
                 <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-emerald-800 uppercase tracking-wide">Crop Health</span>
+                    <span className="text-xs font-bold text-emerald-800 uppercase tracking-wide">{t("Crop Health")}</span>
                     <Activity className="w-4 h-4 text-emerald-700" />
                   </div>
-                  <div className="text-lg font-bold text-stone-900">Risk Assessment</div>
-                  <p className="text-[11px] text-stone-500 mt-0.5">Based on crop observations and image</p>
+                  <div className="text-lg font-bold text-stone-900">{t("Risk Assessment")}</div>
+                  <p className="text-[11px] text-stone-500 mt-0.5">{t("Based on farmer-reported crop observations")}</p>
                 </div>
 
                 {/* Visual Indicator 2 */}
                 <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-blue-800 uppercase tracking-wide">Weather</span>
+                    <span className="text-xs font-bold text-blue-800 uppercase tracking-wide">{t("Weather")}</span>
                     <CloudSun className="w-4 h-4 text-blue-700" />
                   </div>
-                  <div className="text-lg font-bold text-stone-900">Local Conditions</div>
-                  <p className="text-[11px] text-stone-500 mt-0.5">Weather factors affecting crop health</p>
+                  <div className="text-lg font-bold text-stone-900">{t("Local Conditions")}</div>
+                  <p className="text-[11px] text-stone-500 mt-0.5">{t("Weather factors affecting crop health")}</p>
                 </div>
 
                 {/* Visual Indicator 3 */}
                 <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-100">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">Market</span>
+                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">{t("Market")}</span>
                     <TrendingUp className="w-4 h-4 text-amber-700" />
                   </div>
-                  <div className="text-lg font-bold text-stone-900">Market Intelligence</div>
-                  <p className="text-[11px] text-stone-500 mt-0.5">Price trends and local market conditions</p>
+                  <div className="text-lg font-bold text-stone-900">{t("Market Intelligence")}</div>
+                  <p className="text-[11px] text-stone-500 mt-0.5">{t("Price trends and local market conditions")}</p>
                 </div>
               </div>
 
@@ -130,9 +143,9 @@ export default function Landing() {
               <div className="mt-4 pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-2">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span className="font-medium">Synthesizes Visuals + Microclimate + Mandi Dynamics</span>
+                  <span className="font-medium">{t("Rule-Based Crop Risk + Farmer-Reported Field Conditions")}</span>
                 </div>
-                <span className="text-stone-400">Ethical Decision Support • No False Medical Guarantees</span>
+                <span className="text-stone-400">{t("Ethical Decision Support • No False Medical Guarantees")}</span>
               </div>
             </div>
           </div>
@@ -142,10 +155,10 @@ export default function Landing() {
         <section className="py-12 sm:py-16 px-4 sm:px-8 max-w-6xl mx-auto">
           <div className="text-center max-w-xl mx-auto mb-10">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900">
-              Three Pillars of Farm Intelligence
+              {t("Three Pillars of Farm Intelligence")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 mt-2">
-              Actionable, grounded support designed for daily farming decisions
+              {t("Actionable, grounded support designed for daily farming decisions")}
             </p>
           </div>
 
@@ -157,16 +170,16 @@ export default function Landing() {
                   <Activity className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-stone-900 mb-2">
-                  1. Crop Health
+                  1. {t("Crop Health")}
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                  Analyze crop images and farmer observations to identify potential crop health risks.
+                  {t("Apply transparent rules to selected symptoms and farmer-reported field observations. Uploaded photos are not analyzed.")}
                 </p>
               </div>
 
               <div className="mt-6 pt-4 border-t border-stone-100 flex items-center text-xs font-bold text-emerald-700">
                 <Link to="/farmer?action=analyze" className="inline-flex items-center gap-1 hover:underline">
-                  Analyze leaf & symptoms →
+                  {t("Analyze leaf & symptoms →")}
                 </Link>
               </div>
             </div>
@@ -178,16 +191,16 @@ export default function Landing() {
                   <CloudSun className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-stone-900 mb-2">
-                  2. Weather Intelligence
+                  2. {t("Weather Intelligence")}
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                  Understand how rainfall, temperature and humidity may affect your crop.
+                  {t("Understand how rainfall, temperature and humidity may affect your crop.")}
                 </p>
               </div>
 
               <div className="mt-6 pt-4 border-t border-stone-100 flex items-center text-xs font-bold text-blue-700">
                 <Link to="/weather" className="inline-flex items-center gap-1 hover:underline">
-                  View 5-day weather risks →
+                  {t("View 5-day weather risks →")}
                 </Link>
               </div>
             </div>
@@ -199,16 +212,16 @@ export default function Landing() {
                   <TrendingUp className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-stone-900 mb-2">
-                  3. Market Intelligence
+                  3. {t("Market Intelligence")}
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                  Track market trends and understand recent price movements.
+                  {t("Track market trends and understand recent price movements.")}
                 </p>
               </div>
 
               <div className="mt-6 pt-4 border-t border-stone-100 flex items-center text-xs font-bold text-amber-700">
                 <Link to="/market" className="inline-flex items-center gap-1 hover:underline">
-                  Explore APMC price trends →
+                  {t("Explore APMC price trends →")}
                 </Link>
               </div>
             </div>
@@ -222,10 +235,10 @@ export default function Landing() {
               <ShieldCheck className="w-6 h-6 text-emerald-700" />
             </div>
             <h4 className="text-sm font-bold text-stone-900">
-              Transparent Decision Support — Built for Indian Agriculture
+              {t("Transparent Decision Support — Built for Indian Agriculture")}
             </h4>
             <p className="text-xs text-stone-600 max-w-xl mx-auto mt-1 leading-relaxed">
-              KrishiMind presents results as crop health risk indicators and decision-support guidance. We do not make deceptive AI accuracy claims or guaranteed disease diagnoses.
+              {t("KrishiMind presents results as crop health risk indicators and decision-support guidance. We do not make deceptive AI accuracy claims or guaranteed disease diagnoses.")}
             </p>
           </div>
         </section>
@@ -237,10 +250,10 @@ export default function Landing() {
           <div className="flex items-center gap-2">
             <Sprout className="w-4 h-4 text-emerald-700" />
             <span className="font-bold text-stone-800">KrishiMind</span>
-            <span>— AI Crop Decision Support System</span>
+            <span>— {t("Crop Risk & Decision Support")}</span>
           </div>
           <div>
-            Tailored for Smart India Hackathon (SIH) & Indian Agricultural Extension
+            {t("Tailored for Smart India Hackathon (SIH) & Indian Agricultural Extension")}
           </div>
         </div>
       </footer>

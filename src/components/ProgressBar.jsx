@@ -1,5 +1,6 @@
 // src/components/ProgressBar.jsx
 import React from 'react';
+import { useI18n } from '../i18n';
 
 export default function ProgressBar({
   value = 0,
@@ -9,6 +10,7 @@ export default function ProgressBar({
   color = "emerald",
   size = "md"
 }) {
+  const { t } = useI18n();
   const percentage = Math.min(Math.max(Math.round((value / max) * 100), 0), 100);
 
   const colorMap = {
@@ -28,7 +30,7 @@ export default function ProgressBar({
     <div className="w-full">
       {(label || showPercentage) && (
         <div className="flex justify-between items-center text-xs font-medium text-stone-600 mb-1.5">
-          {label && <span>{label}</span>}
+          {label &&           <span>{t(label)}</span>}
           {showPercentage && <span>{percentage}%</span>}
         </div>
       )}

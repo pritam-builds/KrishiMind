@@ -2,6 +2,7 @@
 import React from 'react';
 import { commonSymptomsList } from '../data/mockData';
 import { Check, Clock, AlertCircle, HelpCircle } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 export default function SymptomSelector({
   selectedSymptoms = [],
@@ -11,6 +12,7 @@ export default function SymptomSelector({
   spreadSpeed = "Moderately",
   onChangeSpreadSpeed
 }) {
+  const { t } = useI18n();
   const spreadOptions = [
     { id: "Slowly", label: "Slowly", desc: "Gradual spread over 7+ days" },
     { id: "Moderately", label: "Moderately", desc: "Noticeable increase over 3–5 days" },
@@ -36,16 +38,16 @@ export default function SymptomSelector({
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
           <label className="block text-sm font-bold text-stone-900">
-            Visible Crop Symptoms <span className="text-emerald-700">*</span>
+            {t("Visible Crop Symptoms")} <span className="text-emerald-700">*</span>
           </label>
           <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 w-fit">
             {selectedSymptoms.length > 0
-              ? `${selectedSymptoms.length} symptom${selectedSymptoms.length > 1 ? 's' : ''} selected`
-              : 'Select one or more'}
+              ? `${selectedSymptoms.length} ${t(selectedSymptoms.length === 1 ? 'symptom' : 'symptoms')} ${t('selected')}`
+              : t('Select one or more')}
           </span>
         </div>
         <p className="text-xs text-stone-600 mb-3.5 leading-relaxed">
-          Tap each symptom you observe on your plants. You can choose multiple symptoms for an accurate evaluation.
+          {t("Tap each symptom you observe on your plants. The selected signs are scored as reported observations, not used to identify a disease.")}
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -69,7 +71,7 @@ export default function SymptomSelector({
                       {symptom.icon || '🌱'}
                     </span>
                     <span className="text-sm font-bold text-stone-900">
-                      {symptom.label}
+                      {t(symptom.label)}
                     </span>
                   </div>
 
@@ -86,15 +88,15 @@ export default function SymptomSelector({
                 </div>
 
                 <p className="text-[11px] text-stone-600 font-normal leading-relaxed">
-                  {symptom.description}
+                  {t(symptom.description)}
                 </p>
 
                 <div className="flex items-center justify-between pt-1 border-t border-stone-100/80">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500">
-                    {symptom.category}
+                    {t(symptom.category)}
                   </span>
                   <span className={`text-[10px] font-semibold ${isSelected ? 'text-emerald-800' : 'text-stone-400'}`}>
-                    {isSelected ? '✓ Selected' : '+ Tap to add'}
+                    {isSelected ? `✓ ${t('Selected')}` : `+ ${t('Tap to add')}`}
                   </span>
                 </div>
               </button>
@@ -106,13 +108,13 @@ export default function SymptomSelector({
         {isOtherSelected && (
           <div className="mt-3.5 p-3.5 bg-amber-50/70 border border-amber-200/90 rounded-2xl animate-fadeIn">
             <label className="block text-xs font-bold text-amber-900 mb-1">
-              Please specify the other symptom or sign:
+              {t("Please specify the other symptom or sign:")}
             </label>
             <input
               type="text"
               value={otherSymptomText}
               onChange={(e) => onChangeOtherText && onChangeOtherText(e.target.value)}
-              placeholder="e.g., White powdery coating, leaf curl, fruit rotting, bark splitting..."
+              placeholder={t("e.g., White powdery coating, leaf curl, fruit rotting, bark splitting...")}
               className="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
@@ -125,11 +127,11 @@ export default function SymptomSelector({
           <div className="flex items-center gap-1.5 mb-1">
             <Clock className="w-3.5 h-3.5 text-emerald-700" />
             <label className="text-xs font-bold text-stone-800">
-              How quickly are these symptoms spreading across the field?
+              {t("How quickly are these symptoms spreading across the field?")}
             </label>
           </div>
           <p className="text-[11px] text-stone-500 mb-2.5">
-            Helps evaluate disease pressure and progression urgency.
+            {t("Records the progression you have observed; it does not confirm a disease.")}
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -146,9 +148,9 @@ export default function SymptomSelector({
                       : 'border-stone-200 bg-white hover:border-stone-300 text-stone-700'
                   }`}
                 >
-                  <div className="text-xs font-bold mb-0.5">{option.label}</div>
+                  <div className="text-xs font-bold mb-0.5">{t(option.label)}</div>
                   <div className="text-[10px] text-stone-500 font-normal leading-tight">
-                    {option.desc}
+                    {t(option.desc)}
                   </div>
                 </button>
               );

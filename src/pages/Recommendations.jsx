@@ -1,72 +1,70 @@
 // src/pages/Recommendations.jsx
 import React, { useState } from 'react';
 import { useCrop } from '../context/CropContext';
+import { useI18n } from '../i18n';
 import RecommendationCard from '../components/RecommendationCard';
 import {
   Lightbulb,
   Activity,
-  CloudSun,
-  TrendingUp,
-  Sprout,
   ShieldCheck,
-  CheckCircle2,
-  Circle,
   AlertCircle,
-  HelpCircle,
-  Share2,
   Printer
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Recommendations() {
-  const { currentAnalysis, weather, market, recommendations } = useCrop();
+  const { currentAnalysis } = useCrop();
+  const { t, formatDate } = useI18n();
+  const assessment = currentAnalysis?.assessment;
+  const receivedInputs = currentAnalysis?.receivedInputs || {};
+  const observedSymptoms = receivedInputs.symptoms || [];
+  const fieldObservations = receivedInputs.fieldObservations || {};
+  const assessmentFactors = assessment?.factors || currentAnalysis?.factors || [];
+  const recommendations = assessment?.suggestedNextSteps || currentAnalysis?.suggestedNextSteps || [];
+  const hasAssessment = Boolean(assessment);
 
-  const factors = [
-    {
-      id: "crop_health",
-      title: "1. Crop Health",
-      status: currentAnalysis?.riskBand || "Moderate–High Risk",
-      detail: "Visual observations show leaf spots with necrotic rings. Risk score estimated at " + (currentAnalysis?.riskScore || 72) + "/100.",
-      badgeColor: "bg-amber-100 text-amber-800 border-amber-300",
-      borderColor: "border-amber-300",
-      icon: Activity
-    },
-    {
-      id: "weather",
-      title: "2. Weather",
-      status: "High Humidity (78%)",
-      detail: `${weather?.humidity || 78}% humidity and ${weather?.rainProbability || 65}% rain probability over next 36h. Canopy wetness favors spore growth.`,
-      badgeColor: "bg-blue-100 text-blue-800 border-blue-300",
-      borderColor: "border-blue-300",
-      icon: CloudSun
-    },
-    {
-      id: "market",
-      title: "3. Market",
-      status: "Upward Price Trend (+8.8%)",
-      detail: `Current Pune mandi rate is ₹${(market?.currentPrice || 2850).toLocaleString()}/qtl. Tightening local arrivals support firm pricing.`,
-      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
-      borderColor: "border-emerald-300",
-      icon: TrendingUp
-    },
-    {
-      id: "crop_stage",
-      title: "4. Crop Stage",
-      status: currentAnalysis?.stage || "Fruiting",
-      detail: "Dense canopy holds microclimate moisture. Foliage health is critical to support fruit development and prevent sunscald.",
-      badgeColor: "bg-purple-100 text-purple-800 border-purple-300",
-      borderColor: "border-purple-300",
-      icon: Sprout
-    }
-  ];
+  const factors = assessmentFactors.map((factor, index) => {
+    const points = Number(factor.points) || 0;
+    const color = points > 0
+      ? {
+          badgeColor: "bg-amber-100 text-amber-800 border-amber-300",
+          borderColor: "border-amber-300"
+        }
+      : points < 0
+        ? {
+            badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
+            borderColor: "border-emerald-300"
+          }
+        : {
+            badgeColor: "bg-stone-100 text-stone-700 border-stone-300",
+            borderColor: "border-stone-300"
+          };
+    return {
+      id: `factor-${index}`,
+        title: t(factor.title),
+        status: t(factor.metric || factor.status),
+        detail: t(factor.description),
+      ...color
+    };
+  });
 
-  const nextSteps = [
-    { id: 1, step: "Inspect affected plants", detail: "Examine 10–15 sample plants across the field. Quantify whether spots are restricted to lower leaves.", priority: "High", type: "Field Inspection", done: false },
-    { id: 2, step: "Monitor disease spread", detail: "Observe whether dark lesions expand into newly developing leaves or fruit calyx in 48 hours.", priority: "High", type: "Monitoring", done: false },
-    { id: 3, step: "Check upcoming rainfall", detail: "Avoid spraying immediately prior to rain; high rain probability washes untreated foliar protectors.", priority: "Moderate", type: "Weather Planning", done: false },
-    { id: 4, step: "Review local market prices", detail: "Monitor daily APMC rates in Pune and Narayangaon. Plan selective early pickings as fruit reaches breaker stage.", priority: "Moderate", type: "Market Planning", done: false },
-    { id: 5, step: "Record changes in crop condition", detail: "Capture a follow-up photo in 3 days under daylight to document whether symptoms stabilize.", priority: "Recommended", type: "Documentation", done: false }
-  ];
+  const nextSteps = recommendations.map((recommendation, index) => ({
+    id: `assessment-step-${index}`,
+    step: t(typeof recommendation === 'string' ? recommendation : recommendation.text),
+    detail: typeof recommendation === 'string' ? '' : t(recommendation.detail),
+    type: t("Assessment follow-up"),
+    done: false
+  }));
+  const symptomSummary = observedSymptoms.length
+    ? observedSymptoms.map(symptom => t(symptom.replace(/_/g, ' '))).join(', ')
+    : t("no symptoms selected");
+  const observationSummary = [
+    fieldObservations.soilCondition && `${t("Soil:")} ${t(fieldObservations.soilCondition)}`,
+    fieldObservations.recentRainfall && `${t("Recent rainfall:")} ${t(fieldObservations.recentRainfall)}`,
+    fieldObservations.irrigationCondition && `${t("Irrigation:")} ${t(fieldObservations.irrigationCondition)}`,
+    fieldObservations.spreadSpeed && fieldObservations.spreadSpeed !== "Not sure" && `${t("Spread:")} ${t(fieldObservations.spreadSpeed)}`,
+    fieldObservations.additionalObservation
+  ].filter(Boolean).join('; ');
 
   return (
     <div className="space-y-8">
@@ -75,13 +73,13 @@ export default function Recommendations() {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold mb-2">
             <Lightbulb className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Holistic Farm Intelligence</span>
+            <span>{t("Holistic Farm Intelligence")}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
-            KrishiMind Decision Support
+            {t("KrishiMind Decision Support")}
           </h1>
           <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-xl">
-            Synthesizing crop health, weather conditions, growth stage, and market dynamics into practical agricultural decision support.
+            {t("Field follow-up guidance based on the latest crop assessment and farmer-reported observations.")}
           </p>
         </div>
 
@@ -92,7 +90,7 @@ export default function Recommendations() {
             className="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold py-2.5 px-3.5 rounded-xl border border-stone-200 transition-colors"
           >
             <Printer className="w-4 h-4" />
-            <span>Print Advisory</span>
+            <span>{t("Print Advisory")}</span>
           </button>
         </div>
       </div>
@@ -101,24 +99,40 @@ export default function Recommendations() {
       <div className="bg-gradient-to-r from-emerald-900 to-emerald-800 text-white rounded-3xl p-6 sm:p-8 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">
-            Synthesized Assessment
+            {t("Synthesized Assessment")}
           </span>
         </div>
         <h2 className="text-xl sm:text-2xl font-bold mb-3">
-          Current Situation
+          {t("Current Situation")}
         </h2>
         <p className="text-emerald-100 text-base sm:text-lg leading-relaxed max-w-3xl font-medium">
-          "Your {currentAnalysis?.crop?.toLowerCase() || 'tomato'} crop is in the {currentAnalysis?.stage?.toLowerCase() || 'fruiting'} stage. The system has identified moderate crop-health risk, high humidity and an upward market-price trend."
+          {hasAssessment
+            ? `${t("Assessment for {crop} at {stage} stage: {category} risk indicator ({score}/100). Selected symptoms: {symptoms}.", {
+                crop: currentAnalysis.crop,
+                stage: t(currentAnalysis.stage),
+                category: t(assessment.riskCategory),
+                score: assessment.riskScore,
+                symptoms: symptomSummary
+              })}${observationSummary ? ` ${t("Reported field observations: {observations}.", { observations: observationSummary })}` : ''}`
+            : t("No submitted crop assessment is available yet. Submit crop details and field observations to view assessment-specific next steps.")}
         </p>
 
         <div className="mt-6 pt-5 border-t border-emerald-700/60 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-200">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-300" />
-            <span>Crop: {currentAnalysis?.crop || 'Tomato'} ({currentAnalysis?.variety || 'Abhinav'})</span>
-            <span>•</span>
-            <span>Plot: {currentAnalysis?.location || 'Pune, Maharashtra'}</span>
+            {hasAssessment ? (
+              <>
+                <span>{t("Crop:")} {currentAnalysis.crop} ({t(currentAnalysis.stage)})</span>
+                <span>•</span>
+                <span>{t("Plot:")} {currentAnalysis.location || t('Not provided')}</span>
+              </>
+            ) : (
+              <Link to="/farmer?action=analyze" className="underline underline-offset-2">{t("Start a crop assessment")}</Link>
+            )}
           </div>
-          <span className="text-emerald-300/80">Updated based on latest input</span>
+          <span className="text-emerald-300/80">
+            {assessment?.assessedAt ? `${t("Assessed")} ${formatDate(new Date(assessment.assessedAt), { dateStyle: 'medium', timeStyle: 'short' })}` : t("Assessment data not available")}
+          </span>
         </div>
       </div>
 
@@ -126,16 +140,15 @@ export default function Recommendations() {
       <div>
         <div className="mb-4">
           <h2 className="text-xl font-bold text-stone-900">
-            Factors to Consider
+            {t("Factors to Consider")}
           </h2>
           <p className="text-xs text-stone-500">
-            The four interrelated dimensions affecting your upcoming farm decisions
+            {t("Reported inputs that contributed to this assessment score")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {factors.map((f) => {
-            const IconComponent = f.icon;
             return (
               <div
                 key={f.id}
@@ -145,30 +158,35 @@ export default function Recommendations() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700">
-                        <IconComponent className="w-4 h-4" />
+                        <Activity className="w-4 h-4" />
                       </div>
-                      <h3 className="text-sm font-bold text-stone-900">{f.title}</h3>
+                      <h3 className="text-sm font-bold text-stone-900">{t(f.title)}</h3>
                     </div>
                   </div>
 
                   <span className={`inline-block text-xs px-2.5 py-1 rounded-full font-bold border mb-2.5 ${f.badgeColor}`}>
-                    {f.status}
+                    {t(f.status)}
                   </span>
 
                   <p className="text-xs text-stone-600 leading-relaxed">
-                    {f.detail}
+                    {t(f.detail)}
                   </p>
                 </div>
               </div>
             );
           })}
+          {!factors.length && (
+            <p className="text-sm text-stone-500">
+              {t("Assessment factors will appear here after a crop assessment is submitted.")}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Suggested Next Steps (Checklist) */}
       <RecommendationCard
-        title="Suggested Next Steps"
-        subtitle="Field inspection, weather management, and harvest monitoring checklist"
+        title={t("Suggested Next Steps")}
+        subtitle={t("Generated from the selected symptoms and reported field conditions")}
         steps={nextSteps}
       />
 
@@ -176,7 +194,7 @@ export default function Recommendations() {
       <div className="p-4 bg-stone-100/90 rounded-2xl border border-stone-300/70 text-stone-700 text-xs flex items-start gap-3">
         <AlertCircle className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          <strong>Important Advisory Principle:</strong> KrishiMind recommendations are presented strictly as decision-support information based on observed symptoms and meteorological trends. They are not guaranteed agronomic instructions or binding financial mandates. Farmers should corroborate observations with field checks and local KVK officers before making high-stakes treatment or sales decisions.
+          <strong>{t("Uncertainty:")}</strong> {t("This is a transparent rule-based indicator using farmer-reported inputs, not a diagnosis. Visual disease detection is not connected. Confirm observations in the field and consult a local agricultural extension officer if crop condition worsens. No treatment dosage, yield prediction, or financial instruction is provided.")}
         </p>
       </div>
     </div>

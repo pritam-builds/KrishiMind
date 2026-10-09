@@ -2,6 +2,7 @@
 import React from 'react';
 import { Sprout, MapPin, Calendar, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useI18n } from '../i18n';
 
 export default function CropCard({
   crop = "Tomato",
@@ -15,6 +16,7 @@ export default function CropCard({
   actionText = "View Detailed Assessment",
   actionLink = "/crop-analysis"
 }) {
+  const { t } = useI18n();
   const getRiskBadge = (score) => {
     if (score >= 68) {
       return {
@@ -49,16 +51,16 @@ export default function CropCard({
             <div className="flex items-center gap-2">
               <h3 className="text-xl font-bold text-stone-900">{crop}</h3>
               <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full font-medium">
-                {variety}
+                {t(variety)}
               </span>
             </div>
-            <p className="text-xs text-stone-500 mt-0.5">Growth Stage: <span className="font-semibold text-stone-700">{stage}</span></p>
+            <p className="text-xs text-stone-500 mt-0.5">{t("Growth Stage")}: <span className="font-semibold text-stone-700">{t(stage)}</span></p>
           </div>
         </div>
 
         <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${badge.bg}`}>
           <span className={`w-2 h-2 rounded-full ${badge.dot} animate-pulse`} />
-          <span>{riskBand || badge.label}</span>
+          <span>{t(riskBand || badge.label)}</span>
           <span className="opacity-75">({riskScore}/100)</span>
         </div>
       </div>
@@ -70,11 +72,11 @@ export default function CropCard({
         </div>
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-stone-400" />
-          <span>Assessed: {date}</span>
+          <span>{t("Assessed:")} {date}</span>
         </div>
         <div className="flex items-center gap-2 col-span-2 sm:col-span-1">
           <Activity className="w-4 h-4 text-emerald-600" />
-          <span>Decision Support Active</span>
+          <span>{t("Decision Support Active")}</span>
         </div>
       </div>
 
@@ -84,7 +86,7 @@ export default function CropCard({
             to={actionLink}
             className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors shadow-sm shadow-emerald-700/20"
           >
-            {actionText}
+            {t(actionText)}
           </Link>
         </div>
       )}

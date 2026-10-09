@@ -13,12 +13,14 @@ import Market from './pages/Market';
 import Recommendations from './pages/Recommendations';
 import History from './pages/History';
 import Profile from './pages/Profile';
+import { LocaleProvider } from './i18n';
 
 export default function App() {
   return (
-    <CropProvider>
-      <BrowserRouter>
-        <Routes>
+    <LocaleProvider>
+      <CropProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Landing Page without Dashboard Sidebar */}
           <Route path="/" element={<Landing />} />
 
@@ -35,8 +37,9 @@ export default function App() {
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </CropProvider>
+          </Routes>
+        </BrowserRouter>
+      </CropProvider>
+    </LocaleProvider>
   );
 }

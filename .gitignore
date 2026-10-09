@@ -3,3 +3,6 @@ dist/
 .env
 .env.*
 !.env.example
+backend/krishimind_history.sqlite3
+backend/krishimind_history.sqlite3-shm
+backend/krishimind_history.sqlite3-wal

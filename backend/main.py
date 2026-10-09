@@ -2,17 +2,20 @@
 import io
 import uuid
 import json
+import sqlite3
 from typing import List, Optional, Tuple
 from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field, ValidationError
 from PIL import Image
 
 # Initialize FastAPI application
 app = FastAPI(
     title="KrishiMind Crop Analysis API",
-    description="Backend foundation for real crop health assessment and computer vision models.",
+    description="Transparent rule-based crop risk assessment using farmer-reported inputs.",
     version="1.0.0"
 )
 
@@ -34,6 +37,179 @@ app.add_middleware(
 # Allowed image MIME types and limits
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/jpg"}
 MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024  # 15 MB limit
+DATABASE_PATH = Path(__file__).resolve().parent / "krishimind_history.sqlite3"
+
+
+def get_database_connection() -> sqlite3.Connection:
+    connection = sqlite3.connect(DATABASE_PATH, timeout=10)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def initialize_database() -> None:
+    connection = get_database_connection()
+    try:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS crop_assessments (
+                assessment_id TEXT PRIMARY KEY,
+                crop_name TEXT NOT NULL,
+                growth_stage TEXT NOT NULL,
+                selected_symptoms TEXT NOT NULL,
+                field_observations TEXT NOT NULL,
+                location TEXT NOT NULL,
+                risk_score INTEGER NOT NULL,
+                risk_category TEXT NOT NULL,
+                assessment_factors TEXT NOT NULL,
+                recommendations TEXT NOT NULL,
+                assessed_at TEXT NOT NULL,
+                model_status TEXT NOT NULL,
+                complete_assessment TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS farmer_profile (
+                profile_id INTEGER PRIMARY KEY CHECK (profile_id = 1),
+                profile_data TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
+@app.on_event("startup")
+def startup_database() -> None:
+    initialize_database()
+
+
+def save_assessment(assessment: dict) -> None:
+    received_inputs = assessment["receivedInputs"]
+    result = assessment["assessment"]
+    connection = get_database_connection()
+    try:
+        connection.execute(
+            """
+            INSERT INTO crop_assessments (
+                assessment_id, crop_name, growth_stage, selected_symptoms,
+                field_observations, location, risk_score, risk_category,
+                assessment_factors, recommendations, assessed_at, model_status,
+                complete_assessment
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                assessment["id"],
+                assessment["crop"],
+                assessment["stage"],
+                json.dumps(received_inputs["symptoms"]),
+                json.dumps(received_inputs["fieldObservations"]),
+                json.dumps(received_inputs["location"]),
+                result["riskScore"],
+                result["riskCategory"],
+                json.dumps(result["factors"]),
+                json.dumps(result["suggestedNextSteps"]),
+                result["assessedAt"],
+                result["modelStatus"],
+                json.dumps(assessment),
+            ),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def get_history_summary(assessment: dict) -> dict:
+    return {
+        "id": assessment["id"],
+        "date": assessment["date"],
+        "crop": assessment["crop"],
+        "variety": assessment.get("variety"),
+        "location": assessment.get("location") or "",
+        "stage": assessment["stage"],
+        "riskScore": assessment["assessment"]["riskScore"],
+        "riskCategory": assessment["assessment"]["riskCategory"],
+        "riskLevel": assessment["assessment"]["riskCategory"],
+        "status": "Completed",
+        "symptoms": assessment["receivedInputs"]["symptoms"],
+        "assessedAt": assessment["assessment"]["assessedAt"],
+        "modelStatus": assessment["assessment"]["modelStatus"],
+    }
+
+
+class FarmerProfile(BaseModel):
+    name: str
+    mobile: str = ""
+    preferredLanguage: str = "English"
+    state: str = ""
+    district: str = ""
+    village: str = ""
+    farmSize: str = ""
+    soilType: str = ""
+    irrigationType: str = ""
+    mainCrops: List[str] = Field(default_factory=list)
+
+
+@app.get("/api/profile")
+def get_farmer_profile():
+    try:
+        connection = get_database_connection()
+        try:
+            row = connection.execute(
+                "SELECT profile_data, updated_at FROM farmer_profile WHERE profile_id = 1"
+            ).fetchone()
+        finally:
+            connection.close()
+        if row is None:
+            return {"data": None, "success": True, "persisted": False}
+        profile_data = FarmerProfile.model_validate(json.loads(row["profile_data"])).model_dump()
+        return {
+            "data": profile_data,
+            "success": True,
+            "persisted": True,
+            "updatedAt": row["updated_at"],
+        }
+    except (sqlite3.Error, json.JSONDecodeError, ValidationError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="The farmer profile could not be loaded.",
+        ) from exc
+
+
+@app.put("/api/profile")
+def save_farmer_profile(profile: FarmerProfile):
+    profile_data = profile.model_dump()
+    updated_at = datetime.now(timezone.utc).isoformat()
+    try:
+        connection = get_database_connection()
+        try:
+            connection.execute(
+                """
+                INSERT INTO farmer_profile (profile_id, profile_data, updated_at)
+                VALUES (1, ?, ?)
+                ON CONFLICT(profile_id) DO UPDATE SET
+                    profile_data = excluded.profile_data,
+                    updated_at = excluded.updated_at
+                """,
+                (json.dumps(profile_data), updated_at),
+            )
+            connection.commit()
+        finally:
+            connection.close()
+    except sqlite3.Error as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="The farmer profile could not be saved.",
+        ) from exc
+    return {
+        "data": profile_data,
+        "success": True,
+        "persisted": True,
+        "updatedAt": updated_at,
+    }
 
 
 def assess_crop_inputs(
@@ -332,19 +508,12 @@ def health_check():
 @app.post("/api/crop/analyze", status_code=status.HTTP_200_OK)
 async def analyze_crop(
     crop: str = Form(..., description="Crop name (e.g. Tomato, Wheat, Onion)"),
+    growth_stage: str = Form(..., alias="growthStage", description="Current growth stage"),
+    symptoms: Optional[str] = Form(None, description="Reported symptoms as a JSON array"),
+    field_observations: Optional[str] = Form(None, alias="fieldObservations", description="Farmer-reported field conditions as a JSON object"),
+    location_input: Optional[str] = Form(None, alias="location", description="Field location as a JSON object"),
     farmer_name: Optional[str] = Form(None, alias="farmerName"),
     crop_variety: Optional[str] = Form(None, alias="cropVariety", description="Variety or hybrid name"),
-    growth_stage: Optional[str] = Form(None, alias="growthStage", description="Current growth stage"),
-    symptoms: Optional[str] = Form(None, description="Reported symptoms as a JSON array"),
-    spread_speed: str = Form("Not sure", alias="spreadSpeed"),
-    irrigation_condition: Optional[str] = Form(None, alias="irrigationCondition", description="Irrigation condition"),
-    soil_condition: Optional[str] = Form(None, alias="soilCondition", description="Soil moisture/condition"),
-    recent_rainfall: Optional[str] = Form(None, alias="recentRainfall", description="Recent rainfall / water exposure"),
-    other_symptom_text: Optional[str] = Form(None, alias="otherSymptomText"),
-    additional_observation: Optional[str] = Form(None, alias="additionalObservation"),
-    village: Optional[str] = Form(None),
-    district: Optional[str] = Form(None),
-    state: Optional[str] = Form(None),
     farm_size: Optional[str] = Form(None, alias="farmSize"),
     image_file: Optional[UploadFile] = File(None, alias="imageFile", description="Optional crop foliage or plant photo"),
 ):
@@ -352,16 +521,53 @@ async def analyze_crop(
     Assess crop-health risk from farmer-reported inputs.
     An optional photo is validated and stored, but is not analyzed by an AI model.
     """
+    crop = crop.strip()
+    growth_stage = growth_stage.strip()
+    if not crop or not growth_stage:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Crop name and growth stage are required.",
+        )
+
     parsed_symptoms: List[str] = []
     if symptoms:
         try:
             parsed = json.loads(symptoms)
-            if isinstance(parsed, list):
-                parsed_symptoms = [str(s) for s in parsed]
-            else:
-                parsed_symptoms = [str(parsed)]
-        except json.JSONDecodeError:
-            parsed_symptoms = [s.strip() for s in symptoms.split(",") if s.strip()]
+        except json.JSONDecodeError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Symptoms must be sent as a JSON array.",
+            ) from exc
+        if not isinstance(parsed, list):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Symptoms must be sent as a JSON array.",
+            )
+        parsed_symptoms = [str(value).strip() for value in parsed if str(value).strip()]
+
+    try:
+        parsed_observations = json.loads(field_observations) if field_observations else {}
+        parsed_location = json.loads(location_input) if location_input else {}
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Field observations and location must be valid JSON objects.",
+        ) from exc
+    if not isinstance(parsed_observations, dict) or not isinstance(parsed_location, dict):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Field observations and location must be JSON objects.",
+        )
+
+    spread_speed = str(parsed_observations.get("spreadSpeed") or "Not sure")
+    irrigation_condition = str(parsed_observations.get("irrigationCondition") or "")
+    soil_condition = str(parsed_observations.get("soilCondition") or "")
+    recent_rainfall = str(parsed_observations.get("recentRainfall") or "")
+    other_symptom_text = str(parsed_observations.get("otherSymptomText") or "")
+    additional_observation = str(parsed_observations.get("additionalObservation") or "")
+    village = str(parsed_location.get("village") or "")
+    district = str(parsed_location.get("district") or "")
+    state = str(parsed_location.get("state") or "")
 
     image_present = False
     if image_file and image_file.filename:
@@ -403,7 +609,7 @@ async def analyze_crop(
         additional_observation=additional_observation or "",
     )
     analyzed_at = datetime.now(timezone.utc)
-    location_parts = [part for part in (village, district, state) if part]
+    location_parts = [part.strip() for part in (village, district, state) if part.strip()]
     location = ", ".join(location_parts)
     risk_factors = [
         {
@@ -417,8 +623,21 @@ async def analyze_crop(
         for index, recommendation in enumerate(recommendations, start=1)
     ]
 
-    return {
-        "id": f"KM-{uuid.uuid4().hex[:8].upper()}",
+    assessment = {
+        "riskScore": score,
+        "riskCategory": risk_band,
+        "factors": factors,
+        "observationsToReview": concerns,
+        "suggestedNextSteps": recommendations,
+        "assessedAt": analyzed_at.isoformat(),
+        "assessmentMethod": "RULE_BASED",
+        "dataStatus": "FARMER_REPORTED_INPUTS_ONLY",
+        "modelStatus": "NOT_USED",
+        "imageDetectionStatus": "NOT_CONNECTED",
+    }
+
+    assessment_result = {
+        "id": f"KM-{uuid.uuid4().hex.upper()}",
         "crop": crop,
         "farmerName": farmer_name,
         "variety": crop_variety,
@@ -442,6 +661,12 @@ async def analyze_crop(
         "imageAnalysisStatus": "NOT_CONNECTED",
         "imagePresent": image_present,
         "analyzedAt": analyzed_at.isoformat(),
+        "assessment": assessment,
+        "assessmentMethod": "RULE_BASED",
+        "dataStatus": "FARMER_REPORTED_INPUTS_ONLY",
+        "modelStatus": "NOT_USED",
+        "observationsToReview": concerns,
+        "suggestedNextSteps": recommendations,
         "visualObservations": {
             "detectedSymptoms": [],
             "spreadRate": f"{spread_speed} spread reported by farmer",
@@ -456,18 +681,94 @@ async def analyze_crop(
             "cropVariety": crop_variety,
             "growthStage": growth_stage,
             "symptoms": parsed_symptoms,
-            "spreadSpeed": spread_speed,
-            "otherSymptomText": other_symptom_text,
-            "irrigationCondition": irrigation_condition,
-            "soilCondition": soil_condition,
-            "recentRainfall": recent_rainfall,
-            "additionalObservation": additional_observation,
-            "village": village,
-            "district": district,
-            "state": state,
+            "fieldObservations": parsed_observations,
+            "location": parsed_location,
             "farmSize": farm_size,
         }
     }
+    try:
+        save_assessment(assessment_result)
+    except sqlite3.Error as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="The assessment was calculated but could not be saved to history.",
+        ) from exc
+    return assessment_result
+
+
+@app.get("/api/history")
+def list_assessments():
+    try:
+        connection = get_database_connection()
+        try:
+            rows = connection.execute(
+                "SELECT complete_assessment FROM crop_assessments ORDER BY assessed_at DESC, assessment_id DESC"
+            ).fetchall()
+        finally:
+            connection.close()
+        assessments = [json.loads(row["complete_assessment"]) for row in rows]
+    except (sqlite3.Error, json.JSONDecodeError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Crop assessment history could not be loaded.",
+        ) from exc
+    return {"data": [get_history_summary(item) for item in assessments], "success": True}
+
+
+@app.get("/api/history/{assessment_id}")
+def get_assessment(assessment_id: str):
+    try:
+        connection = get_database_connection()
+        try:
+            row = connection.execute(
+                "SELECT complete_assessment FROM crop_assessments WHERE assessment_id = ?",
+                (assessment_id,),
+            ).fetchone()
+        finally:
+            connection.close()
+    except sqlite3.Error as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="The requested crop assessment could not be loaded.",
+        ) from exc
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No saved crop assessment exists with that ID.",
+        )
+    try:
+        assessment = json.loads(row["complete_assessment"])
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="The saved crop assessment record is invalid.",
+        ) from exc
+    return {"data": assessment, "success": True}
+
+
+@app.delete("/api/history/{assessment_id}")
+def delete_assessment(assessment_id: str):
+    try:
+        connection = get_database_connection()
+        try:
+            cursor = connection.execute(
+                "DELETE FROM crop_assessments WHERE assessment_id = ?",
+                (assessment_id,),
+            )
+            connection.commit()
+        finally:
+            connection.close()
+    except sqlite3.Error as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="The crop assessment could not be deleted.",
+        ) from exc
+    if cursor.rowcount == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No saved crop assessment exists with that ID.",
+        )
+    return {"data": {"id": assessment_id, "deleted": True}, "success": True}
 
 
 if __name__ == "__main__":

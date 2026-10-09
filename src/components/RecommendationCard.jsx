@@ -1,15 +1,21 @@
 // src/components/RecommendationCard.jsx
-import React, { useState } from 'react';
-import { CheckCircle2, Circle, AlertCircle, Clock, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 export default function RecommendationCard({
   steps = [],
   title = "Suggested Next Steps",
   subtitle = "Checklist-style recommendations for field inspection and risk mitigation"
 }) {
+  const { t } = useI18n();
   const [items, setItems] = useState(
     steps.map(s => ({ ...s, completed: s.done || false }))
   );
+
+  useEffect(() => {
+    setItems(steps.map(s => ({ ...s, completed: s.done || false })));
+  }, [steps]);
 
   const toggleItem = (id) => {
     setItems(prev =>
@@ -23,11 +29,11 @@ export default function RecommendationCard({
     <div className="bg-white rounded-2xl p-6 border border-stone-200/80 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-stone-100">
         <div>
-          <h3 className="text-lg font-bold text-stone-900">{title}</h3>
-          <p className="text-xs text-stone-500 mt-0.5">{subtitle}</p>
+          <h3 className="text-lg font-bold text-stone-900">{t(title)}</h3>
+            <p className="text-xs text-stone-500 mt-0.5">{t(subtitle)}</p>
         </div>
         <div className="text-xs font-semibold px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full self-start sm:self-auto">
-          {completedCount} of {items.length} Completed
+          {completedCount} {t("of")} {items.length} {t("Completed")}
         </div>
       </div>
 
@@ -55,7 +61,7 @@ export default function RecommendationCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={`text-sm font-bold ${item.completed ? 'line-through text-stone-400' : 'text-stone-800'}`}>
-                  {item.step || item.title}
+                  {t(item.step || item.title)}
                 </span>
                 {item.priority && (
                   <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider ${
@@ -63,19 +69,19 @@ export default function RecommendationCard({
                       ? 'bg-rose-50 text-rose-700 border border-rose-200'
                       : 'bg-stone-100 text-stone-600'
                   }`}>
-                    {item.priority}
+                    {t(item.priority)}
                   </span>
                 )}
                 {item.type && (
                   <span className="text-[11px] text-stone-400 font-medium">
-                    • {item.type}
+                    • {t(item.type)}
                   </span>
                 )}
               </div>
 
               {(item.detail || item.description) && (
                 <p className={`text-xs mt-1 leading-relaxed ${item.completed ? 'text-stone-400' : 'text-stone-600'}`}>
-                  {item.detail || item.description}
+                  {t(item.detail || item.description)}
                 </p>
               )}
             </div>
@@ -85,7 +91,7 @@ export default function RecommendationCard({
 
       <div className="mt-4 pt-3 border-t border-stone-100 text-xs text-stone-500 flex items-center gap-2">
         <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-        <span>Actions are recommended as field decision-support guidelines, not absolute or guaranteed directives.</span>
+        <span>{t("Actions are recommended as field decision-support guidelines, not absolute or guaranteed directives.")}</span>
       </div>
     </div>
   );

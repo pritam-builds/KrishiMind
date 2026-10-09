@@ -1,5 +1,6 @@
 // src/components/StatCard.jsx
 import React from 'react';
+import { useI18n } from '../i18n';
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 
 export default function StatCard({
@@ -14,6 +15,7 @@ export default function StatCard({
   onClick,
   className = ""
 }) {
+  const { t } = useI18n();
   return (
     <div
       onClick={onClick}
@@ -29,21 +31,21 @@ export default function StatCard({
             </div>
           )}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">{title}</p>
-            <h3 className="text-xl font-bold text-stone-800 mt-0.5">{value}</h3>
+            <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">            {t(title)}</p>
+            <h3 className="text-xl font-bold text-stone-800 mt-0.5">            {t(value)}</h3>
           </div>
         </div>
 
         {badgeText && (
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeColor}`}>
-            {badgeText}
+            {t(badgeText)}
           </span>
         )}
       </div>
 
       {(subValue || trendText) && (
         <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-600">
-          {subValue && <span>{subValue}</span>}
+          {subValue && <span>          {t(subValue)}</span>}
           {trendText && (
             <div className="flex items-center gap-1 font-medium ml-auto">
               {trendType === 'up' && <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600" />}
@@ -58,7 +60,7 @@ export default function StatCard({
                     : 'text-stone-600'
                 }
               >
-                {trendText}
+                {t(trendText)}
               </span>
             </div>
           )}

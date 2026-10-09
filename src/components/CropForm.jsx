@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCrop } from '../context/CropContext';
+import { useI18n } from '../i18n';
 import { cropMasterList, commonSymptomsList } from '../data/mockData';
 import ImageUploader from './ImageUploader';
 import SymptomSelector from './SymptomSelector';
@@ -25,6 +26,7 @@ import {
 export default function CropForm({ onCancel }) {
   const navigate = useNavigate();
   const { profile, submitCropAssessment, isLoading } = useCrop();
+  const { t } = useI18n();
 
   // Form State
   const [formData, setFormData] = useState({
@@ -186,13 +188,13 @@ export default function CropForm({ onCancel }) {
       <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 p-6 sm:p-8 text-white">
         <div className="inline-flex items-center gap-2 bg-emerald-600/70 backdrop-blur-xs px-3.5 py-1 rounded-full text-xs font-semibold mb-3 border border-emerald-400/40">
           <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
-          <span>Field Health & Risk Assessment</span>
+          <span>{t("Field Health & Risk Assessment")}</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-          Crop Input & Observation Form
+          {t("Crop Input & Observation Form")}
         </h2>
         <p className="text-emerald-100/90 text-xs sm:text-sm mt-1.5 max-w-2xl leading-relaxed">
-          Fill in your field observations, crop stage, and growing conditions. KrishiMind brings together your observations with available environmental signals to evaluate crop health.
+          {t("Fill in your crop stage, selected symptoms, and field observations. KrishiMind applies a transparent rule-based risk indicator; uploaded photos are not analyzed.")}
         </p>
       </div>
 
@@ -200,7 +202,7 @@ export default function CropForm({ onCancel }) {
         {validationError && (
           <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs sm:text-sm animate-fadeIn">
             <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
-            <span>{validationError}</span>
+            <span>{t(validationError)}</span>
           </div>
         )}
 
@@ -214,10 +216,10 @@ export default function CropForm({ onCancel }) {
             </div>
             <div>
               <h3 className="text-base font-bold text-stone-900">
-                Farmer & Location
+                {t("Farmer & Location")}
               </h3>
               <p className="text-[11px] text-stone-500">
-                Identify the grower and plot location for localized agronomic evaluation
+                {t("Identify the grower and plot location for localized agronomic evaluation")}
               </p>
             </div>
           </div>
@@ -226,7 +228,7 @@ export default function CropForm({ onCancel }) {
             {/* Farmer Name */}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                Farmer Name <span className="text-emerald-700">*</span>
+                {t("Farmer Name")} <span className="text-emerald-700">*</span>
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -235,7 +237,7 @@ export default function CropForm({ onCancel }) {
                   required
                   value={formData.farmerName}
                   onChange={(e) => setFormData({ ...formData, farmerName: e.target.value })}
-                  placeholder="e.g. Ramesh Patil"
+                  placeholder={t("e.g. Ramesh Patil")}
                   className="w-full pl-9 pr-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
                 />
               </div>
@@ -244,7 +246,7 @@ export default function CropForm({ onCancel }) {
             {/* State */}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                State <span className="text-emerald-700">*</span>
+                {t("State")} <span className="text-emerald-700">*</span>
               </label>
               <select
                 value={formData.state}
@@ -268,7 +270,7 @@ export default function CropForm({ onCancel }) {
             {/* District */}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                District <span className="text-emerald-700">*</span>
+                {t("District")} <span className="text-emerald-700">*</span>
               </label>
               <select
                 value={formData.district}
@@ -284,7 +286,7 @@ export default function CropForm({ onCancel }) {
             {/* Location / Village */}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                Location / Village
+                {t("Location / Village")}
               </label>
               <div className="relative">
                 <MapPin className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -292,7 +294,7 @@ export default function CropForm({ onCancel }) {
                   type="text"
                   value={formData.village}
                   onChange={(e) => setFormData({ ...formData, village: e.target.value })}
-                  placeholder="e.g. Khed Shivapur, Plot 2"
+                  placeholder={t("e.g. Khed Shivapur, Plot 2")}
                   className="w-full pl-9 pr-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
                 />
               </div>
@@ -301,15 +303,15 @@ export default function CropForm({ onCancel }) {
             {/* Farm Size */}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                Farm Size (Acres) <span className="text-stone-400 font-normal">(Optional)</span>
+                {t("Farm Size (Acres)")} <span className="text-stone-400 font-normal">({t("Optional")})</span>
               </label>
               <input
                 type="number"
                 step="0.25"
-                min="0.1"
+                min="0.25"
                 value={formData.farmSize}
                 onChange={(e) => setFormData({ ...formData, farmSize: e.target.value })}
-                placeholder="e.g. 3.5"
+                placeholder={t("e.g. 3.5")}
                 className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
               />
             </div>
@@ -329,23 +331,23 @@ export default function CropForm({ onCancel }) {
                 {formData.locationStatus === 'locating' ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-emerald-700" />
-                    <span>Detecting location...</span>
+                    <span>{t("Detecting location...")}</span>
                   </>
                 ) : formData.locationStatus === 'success' ? (
                   <>
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Location detected ✓</span>
+                    <span>{t("Location detected ✓")}</span>
                   </>
                 ) : (
                   <>
                     <Compass className="w-4 h-4 text-emerald-700" />
-                    <span>Use my location</span>
+                    <span>{t("Use my location")}</span>
                   </>
                 )}
               </button>
               {formData.locationMessage && (
                 <span className={`text-[10px] mt-1 truncate ${formData.locationStatus === 'error' ? 'text-rose-600' : 'text-emerald-700'}`}>
-                  {formData.locationMessage}
+                  {t(formData.locationMessage)}
                 </span>
               )}
             </div>
@@ -362,10 +364,10 @@ export default function CropForm({ onCancel }) {
             </div>
             <div>
               <h3 className="text-base font-bold text-stone-900">
-                Crop Information
+                {t("Crop Information")}
               </h3>
               <p className="text-[11px] text-stone-500">
-                Specify what crop is planted, hybrid variety, and stage of development
+                {t("Specify what crop is planted, hybrid variety, and stage of development")}
               </p>
             </div>
           </div>
@@ -375,7 +377,7 @@ export default function CropForm({ onCancel }) {
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center gap-1">
                 <Sprout className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Crop</span> <span className="text-emerald-700">*</span>
+                <span>{t("Crop")}</span> <span className="text-emerald-700">*</span>
               </label>
               <select
                 value={formData.crop}
@@ -400,13 +402,13 @@ export default function CropForm({ onCancel }) {
             {/* Variety */}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                Variety / Hybrid
+                {t("Variety / Hybrid")}
               </label>
               <input
                 type="text"
                 value={formData.cropVariety}
                 onChange={(e) => setFormData({ ...formData, cropVariety: e.target.value })}
-                placeholder="e.g. Abhinav (F1), Bhima Red"
+                placeholder={t("e.g. Abhinav (F1), Bhima Red")}
                 className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
               />
             </div>
@@ -415,7 +417,7 @@ export default function CropForm({ onCancel }) {
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Growth Stage</span> <span className="text-emerald-700">*</span>
+                <span>{t("Growth Stage")}</span> <span className="text-emerald-700">*</span>
               </label>
               <select
                 value={formData.growthStage}
@@ -423,7 +425,7 @@ export default function CropForm({ onCancel }) {
                 className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm font-medium text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
               >
                 {selectedCropObj.stages.map((stage) => (
-                  <option key={stage} value={stage}>{stage}</option>
+                  <option key={stage} value={stage}>{t(stage)}</option>
                 ))}
               </select>
             </div>
@@ -440,10 +442,10 @@ export default function CropForm({ onCancel }) {
             </div>
             <div>
               <h3 className="text-base font-bold text-stone-900">
-                Crop Observations
+                {t("Crop Observations")}
               </h3>
               <p className="text-[11px] text-stone-500">
-                Select observed symptoms on leaves, stems, or fruits (multiple selections allowed)
+                {t("Select observed symptoms on leaves, stems, or fruits (multiple selections allowed)")}
               </p>
             </div>
           </div>
@@ -468,10 +470,10 @@ export default function CropForm({ onCancel }) {
             </div>
             <div>
               <h3 className="text-base font-bold text-stone-900">
-                Crop Image
+                {t("Crop Image")}
               </h3>
               <p className="text-[11px] text-stone-500">
-                Attach a clear photo of the plant or affected leaves for visual symptom support
+                {t("Optionally attach a crop photo; visual disease detection is not connected")}
               </p>
             </div>
           </div>
@@ -497,10 +499,10 @@ export default function CropForm({ onCancel }) {
             </div>
             <div>
               <h3 className="text-base font-bold text-stone-900">
-                Farm Conditions
+                {t("Farm Conditions")}
               </h3>
               <p className="text-[11px] text-stone-500">
-                Simple indicators to understand water availability, soil state, and recent rain exposure
+                {t("Simple indicators to understand water availability, soil state, and recent rain exposure")}
               </p>
             </div>
           </div>
@@ -510,57 +512,57 @@ export default function CropForm({ onCancel }) {
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center gap-1.5">
                 <Droplets className="w-3.5 h-3.5 text-teal-600" />
-                <span>Irrigation Condition</span>
+                <span>{t("Irrigation Condition")}</span>
               </label>
               <select
                 value={formData.irrigationCondition}
                 onChange={(e) => setFormData({ ...formData, irrigationCondition: e.target.value })}
                 className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
               >
-                <option value="Adequate">Regular / Adequate watering</option>
-                <option value="Low">Low / Irregular watering</option>
-                <option value="Rainfed">Rainfed only (No irrigation)</option>
-                <option value="Excess">Flood / Excess watering</option>
+                <option value="Adequate">{t("Regular / Adequate watering")}</option>
+                <option value="Low">{t("Low / Irregular watering")}</option>
+                <option value="Rainfed">{t("Rainfed only (No irrigation)")}</option>
+                <option value="Excess">{t("Flood / Excess watering")}</option>
               </select>
-              <p className="text-[10px] text-stone-500 mt-1">Watering schedule & source status</p>
+              <p className="text-[10px] text-stone-500 mt-1">{t("Watering schedule & source status")}</p>
             </div>
 
             {/* Soil condition */}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 text-amber-700" />
-                <span>Soil Condition</span>
+                <span>{t("Soil Condition")}</span>
               </label>
               <select
                 value={formData.soilCondition}
                 onChange={(e) => setFormData({ ...formData, soilCondition: e.target.value })}
                 className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
               >
-                <option value="Normal">Normal / Moist (Optimal)</option>
-                <option value="Dry">Dry / Hard or Cracking</option>
-                <option value="Wet">Wet / Damp</option>
-                <option value="Waterlogged">Waterlogged / Poor drainage</option>
+                <option value="Normal">{t("Normal / Moist (Optimal)")}</option>
+                <option value="Dry">{t("Dry / Hard or Cracking")}</option>
+                <option value="Wet">{t("Wet / Damp")}</option>
+                <option value="Waterlogged">{t("Waterlogged / Poor drainage")}</option>
               </select>
-              <p className="text-[10px] text-stone-500 mt-1">Current root-zone moisture feeling</p>
+              <p className="text-[10px] text-stone-500 mt-1">{t("Current root-zone moisture feeling")}</p>
             </div>
 
             {/* Recent rainfall / water exposure */}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center gap-1.5">
                 <CloudRain className="w-3.5 h-3.5 text-blue-600" />
-                <span>Recent Rainfall / Water Exposure</span>
+                <span>{t("Recent Rainfall / Water Exposure")}</span>
               </label>
               <select
                 value={formData.recentRainfall}
                 onChange={(e) => setFormData({ ...formData, recentRainfall: e.target.value })}
                 className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
               >
-                <option value="None">No rain (Dry spell in past 7 days)</option>
-                <option value="Light">Light drizzle / Few drops</option>
-                <option value="Moderate">Moderate rain (Showers in past 3 days)</option>
-                <option value="Heavy">Heavy rain / Water accumulated</option>
+                <option value="None">{t("No rain (Dry spell in past 7 days)")}</option>
+                <option value="Light">{t("Light drizzle / Few drops")}</option>
+                <option value="Moderate">{t("Moderate rain (Showers in past 3 days)")}</option>
+                <option value="Heavy">{t("Heavy rain / Water accumulated")}</option>
               </select>
-              <p className="text-[10px] text-stone-500 mt-1">Weather exposure over recent days</p>
+              <p className="text-[10px] text-stone-500 mt-1">{t("Weather exposure over recent days")}</p>
             </div>
           </div>
         </div>
@@ -575,27 +577,27 @@ export default function CropForm({ onCancel }) {
             </div>
             <div>
               <h3 className="text-base font-bold text-stone-900">
-                Additional Observation
+                {t("Additional Observation")}
               </h3>
               <p className="text-[11px] text-stone-500">
-                Share any other nuances, previous sprays, or unusual pattern observed in the field
+                {t("Share any other nuances, previous sprays, or unusual pattern observed in the field")}
               </p>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-stone-700 mb-1.5">
-              Describe anything else you noticed in the crop
+              {t("Describe anything else you noticed in the crop")}
             </label>
             <textarea
               rows={3}
               value={formData.additionalObservation}
               onChange={(e) => setFormData({ ...formData, additionalObservation: e.target.value })}
-              placeholder="e.g., Spots started on lower leaves after heavy morning dew, leaves curling inwards at top canopy, fertilizer applied 5 days ago, or noticed small flying insects under the leaves..."
+              placeholder={t("e.g., Spots started on lower leaves after heavy morning dew, leaves curling inwards at top canopy, fertilizer applied 5 days ago, or noticed small flying insects under the leaves...")}
               className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all leading-relaxed"
             />
             <p className="text-[11px] text-stone-500 mt-1">
-              Farmer observation details help refine risk interpretation beyond single-factor indicators.
+              {t("Farmer observation details help refine risk interpretation beyond single-factor indicators.")}
             </p>
           </div>
         </div>
@@ -607,7 +609,7 @@ export default function CropForm({ onCancel }) {
           {/* Supporting Line */}
           <div className="text-center sm:text-left max-w-md">
             <p className="text-xs sm:text-[13px] font-medium text-stone-600 leading-snug">
-              KrishiMind combines your observations, crop information and available environmental signals.
+              {t("This rule-based indicator uses your selected symptoms and reported field conditions only.")}
             </p>
           </div>
 
@@ -620,7 +622,7 @@ export default function CropForm({ onCancel }) {
                 disabled={isLoading}
                 className="w-full sm:w-auto px-5 py-3 rounded-xl border border-stone-300 text-stone-700 text-xs sm:text-sm font-semibold hover:bg-stone-50 transition-colors"
               >
-                Cancel
+                {t("Cancel")}
               </button>
             )}
 
@@ -632,12 +634,12 @@ export default function CropForm({ onCancel }) {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm sm:text-base">Analyzing Crop...</span>
+                  <span className="text-sm sm:text-base">{t("Analyzing Crop...")}</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-5 h-5 text-emerald-200" />
-                  <span className="text-sm sm:text-base">Analyze Crop</span>
+                  <span className="text-sm sm:text-base">{t("Analyze Crop")}</span>
                 </>
               )}
             </button>

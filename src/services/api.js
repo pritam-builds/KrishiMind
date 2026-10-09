@@ -5,9 +5,7 @@
 import axios from 'axios';
 import {
   mockMarketData,
-  mockDecisionSupportData,
-  mockHistoryList,
-  initialFarmerProfile
+  mockDecisionSupportData
 } from '../data/mockData';
 
 // Toggle mock data for services other than weather.
@@ -35,27 +33,33 @@ const simulateDelay = (ms = 700) => new Promise(resolve => setTimeout(resolve, m
 export async function analyzeCrop(formData) {
   const payload = new FormData();
   const fields = {
-    ...formData,
-    symptoms: JSON.stringify(formData.symptoms || [])
+    crop: formData.crop,
+    growthStage: formData.growthStage,
+    symptoms: JSON.stringify(formData.symptoms || []),
+    fieldObservations: JSON.stringify({
+      spreadSpeed: formData.spreadSpeed || 'Not sure',
+      irrigationCondition: formData.irrigationCondition || '',
+      soilCondition: formData.soilCondition || '',
+      recentRainfall: formData.recentRainfall || '',
+      otherSymptomText: formData.otherSymptomText || '',
+      additionalObservation: formData.additionalObservation || ''
+    }),
+    location: JSON.stringify({
+      village: formData.village || '',
+      district: formData.district || '',
+      state: formData.state || ''
+    }),
+    farmerName: formData.farmerName,
+    cropVariety: formData.cropVariety,
+    farmSize: formData.farmSize
   };
-  const excludedFields = new Set([
-    'imageFile',
-    'imagePreviewUrl',
-    'locationStatus',
-    'locationMessage',
-    'symptomsLabels'
-  ]);
 
   for (const [key, value] of Object.entries(fields)) {
-    if (excludedFields.has(key) || value === undefined || value === null) continue;
-    if (Array.isArray(value)) {
-      payload.append(key, JSON.stringify(value));
-    } else {
-      payload.append(key, String(value));
-    }
+    if (value === undefined || value === null) continue;
+    payload.append(key, String(value));
   }
 
-  if (formData.imageFile instanceof File) {
+  if (typeof File !== 'undefined' && formData.imageFile instanceof File) {
     payload.append('imageFile', formData.imageFile);
   }
 
@@ -142,22 +146,17 @@ export async function getRecommendations(analysisData = null) {
  * Connects to FastAPI endpoint: GET /api/history
  */
 export async function getAnalysisHistory() {
-  if (USE_MOCK_API) {
-    await simulateDelay(400);
-    // Check localStorage for any newly saved user analyses
-    const storedHistory = localStorage.getItem('krishimind_history');
-    if (storedHistory) {
-      try {
-        const parsed = JSON.parse(storedHistory);
-        return { data: parsed, success: true };
-      } catch (e) {
-        console.error("Failed to parse history from localStorage", e);
-      }
-    }
-    return { data: mockHistoryList, success: true };
-  }
-
   const response = await apiClient.get('/history');
+  return response.data;
+}
+
+export async function getAssessmentById(assessmentId) {
+  const response = await apiClient.get(`/history/${encodeURIComponent(assessmentId)}`);
+  return response.data;
+}
+
+export async function deleteAssessment(assessmentId) {
+  const response = await apiClient.delete(`/history/${encodeURIComponent(assessmentId)}`);
   return response.data;
 }
 
@@ -166,30 +165,31 @@ export async function getAnalysisHistory() {
  * Connects to FastAPI endpoints: GET /api/profile, PUT /api/profile
  */
 export async function getFarmerProfile() {
-  if (USE_MOCK_API) {
-    await simulateDelay(300);
-    const stored = localStorage.getItem('krishimind_profile');
-    if (stored) {
-      try {
-        return { data: JSON.parse(stored), success: true };
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return { data: initialFarmerProfile, success: true };
+  const response = await apiClient.get('/profile');
+  if (response.data?.data) return response.data;
+
+  const legacyProfile = localStorage.getItem('krishimind_profile');
+  if (!legacyProfile) return response.data;
+
+  let parsedProfile;
+  try {
+    parsedProfile = JSON.parse(legacyProfile);
+  } catch (error) {
+    console.error("Legacy browser profile could not be parsed", error);
+    throw new Error("A saved browser profile could not be migrated. Please review and save your profile.");
   }
 
-  const response = await apiClient.get('/profile');
-  return response.data;
+  try {
+    const migrationResponse = await apiClient.put('/profile', parsedProfile);
+    localStorage.removeItem('krishimind_profile');
+    return migrationResponse.data;
+  } catch (error) {
+    console.error("Legacy browser profile could not be migrated to the backend", error);
+    throw error;
+  }
 }
 
 export async function saveFarmerProfile(profileData) {
-  if (USE_MOCK_API) {
-    await simulateDelay(500);
-    localStorage.setItem('krishimind_profile', JSON.stringify(profileData));
-    return { data: profileData, success: true };
-  }
-
   const response = await apiClient.put('/profile', profileData);
   return response.data;
 }

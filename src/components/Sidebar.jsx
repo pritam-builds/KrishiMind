@@ -2,6 +2,7 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useCrop } from '../context/CropContext';
+import { useI18n } from '../i18n';
 import {
   LayoutDashboard,
   PlusCircle,
@@ -17,6 +18,7 @@ import {
 
 export default function Sidebar({ className = "" }) {
   const { profile } = useCrop();
+  const { t } = useI18n();
 
   const navItems = [
     { name: "Dashboard", path: "/farmer", icon: LayoutDashboard },
@@ -43,7 +45,7 @@ export default function Sidebar({ className = "" }) {
                 KrishiMind
               </span>
               <p className="text-[11px] font-semibold text-emerald-700 leading-tight">
-                AI Farm Decision Support
+                {t("Crop Risk & Decision Support")}
               </p>
             </div>
           </Link>
@@ -70,7 +72,7 @@ export default function Sidebar({ className = "" }) {
                 {({ isActive }) => (
                   <>
                     <Icon className={`w-4 h-4 ${isActive && !item.highlight ? 'text-white' : item.highlight ? 'text-emerald-700' : 'text-stone-400'}`} />
-                    <span>{item.name}</span>
+                    <span>{t(item.name)}</span>
                   </>
                 )}
               </NavLink>
@@ -100,8 +102,8 @@ export default function Sidebar({ className = "" }) {
         </Link>
 
         <div className="mt-3 px-2 flex items-center justify-between text-[11px] text-stone-400">
-          <span>KrishiMind v1.0</span>
-          <span>SIH Demo Ready</span>
+          <span>{t("KrishiMind v1.0")}</span>
+          <span>{t("SIH Demo Ready")}</span>
         </div>
       </div>
     </aside>

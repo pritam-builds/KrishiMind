@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useCrop } from '../context/CropContext';
+import { useI18n } from '../i18n';
 import {
   Sprout,
   Globe,
@@ -21,10 +22,12 @@ import {
 } from 'lucide-react';
 
 export default function Navbar() {
-  const { profile } = useCrop();
+  const { profile, updateProfileData } = useCrop();
+  const { language, setLanguage, t } = useI18n();
   const location = useLocation();
   const [showLanguageModal, setShowLanguageModal] = useState(false);
-  const [selectedLang, setSelectedLang] = useState('English');
+  const [isSavingLanguage, setIsSavingLanguage] = useState(false);
+  const [languageError, setLanguageError] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const langDropdownRef = useRef(null);
 
@@ -44,6 +47,24 @@ export default function Navbar() {
     { code: 'mr', label: 'मराठी' },
     { code: 'hi', label: 'हिन्दी' }
   ];
+
+  const selectedLang = languages.find((item) => item.code === language)?.label || 'English';
+
+  const handleLanguageChange = async (languageOption) => {
+    setLanguage(languageOption.code);
+    setIsSavingLanguage(true);
+    setLanguageError(null);
+    setShowLanguageModal(false);
+    setIsMobileMenuOpen(false);
+    try {
+      await updateProfileData({ ...profile, preferredLanguage: languageOption.label });
+    } catch (error) {
+      console.error("Unable to save preferred language", error);
+      setLanguageError("Could not save language preference. Please try again.");
+    } finally {
+      setIsSavingLanguage(false);
+    }
+  };
 
   // Auto-close dropdowns and mobile menu on route change
   useEffect(() => {
@@ -73,7 +94,7 @@ export default function Navbar() {
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-stone-900 text-base leading-tight tracking-tight">KrishiMind</span>
-              <span className="text-[10px] font-semibold text-emerald-700 leading-none hidden sm:inline">AI Farm Advisory</span>
+              <span className="text-[10px] font-semibold text-emerald-700 leading-none hidden sm:inline">{t("Farm Decision Support")}</span>
             </div>
           </Link>
         </div>
@@ -93,7 +114,7 @@ export default function Navbar() {
                 }`
               }
             >
-              {item.name}
+              {t(item.name)}
             </NavLink>
           ))}
         </nav>
@@ -118,7 +139,7 @@ export default function Navbar() {
               <Globe className="w-3.5 h-3.5 text-stone-500" />
               <span className="hidden sm:inline font-medium">{selectedLang}</span>
               <span className="sm:hidden font-medium">
-                {selectedLang === 'English' ? 'EN' : selectedLang === 'मराठी' ? 'म' : 'हि'}
+                {language === 'en' ? 'EN' : language === 'mr' ? 'म' : 'हि'}
               </span>
               <ChevronDown className="w-3 h-3 text-stone-400" />
             </button>
@@ -126,24 +147,27 @@ export default function Navbar() {
             {showLanguageModal && (
               <div className="absolute right-0 mt-2 w-36 bg-white rounded-2xl shadow-xl border border-stone-200 p-1.5 z-50 animate-in fade-in duration-100">
                 <div className="text-[10px] font-bold text-stone-400 px-2.5 py-1 uppercase tracking-wider">
-                  Language
+                  {t('Language')}
                 </div>
+                {isSavingLanguage && (
+                  <p className="px-2.5 py-1 text-[10px] text-stone-500" role="status">{t('Saving language...')}</p>
+                )}
+                {languageError && (
+                  <p className="px-2.5 py-1 text-[10px] text-rose-700" role="alert">{t(languageError)}</p>
+                )}
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
                     type="button"
-                    onClick={() => {
-                      setSelectedLang(lang.label);
-                      setShowLanguageModal(false);
-                    }}
+                    onClick={() => handleLanguageChange(lang)}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-colors ${
-                      selectedLang === lang.label
+                      language === lang.code
                         ? 'bg-emerald-50 text-emerald-800 font-bold'
                         : 'text-stone-700 hover:bg-stone-100'
                     }`}
                   >
                     <span>{lang.label}</span>
-                    {selectedLang === lang.label && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                    {language === lang.code && <Check className="w-3.5 h-3.5 text-emerald-600" />}
                   </button>
                 ))}
               </div>
@@ -158,14 +182,14 @@ export default function Navbar() {
                 ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
                 : 'border-stone-200 text-stone-700 hover:bg-stone-100 hover:text-stone-900'
             }`}
-            title={profile?.name ? `Farmer: ${profile.name}` : "Farmer Profile"}
-            aria-label="Farmer Profile"
+            title={profile?.name ? `${t('Farmer')}: ${profile.name}` : t("Farmer Profile")}
+            aria-label={t("Farmer Profile")}
           >
             <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
               {profile?.name ? profile.name.charAt(0) : <User className="w-4 h-4 text-emerald-700" />}
             </div>
             <span className="hidden xl:inline text-xs font-semibold text-stone-700 max-w-[80px] truncate">
-              {profile?.name?.split(' ')[0] || 'Profile'}
+              {profile?.name?.split(' ')[0] || t('Profile')}
             </span>
           </Link>
 
@@ -175,7 +199,7 @@ export default function Navbar() {
             className="hidden sm:inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2 px-3.5 rounded-xl shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
-            <span>Start Crop Check</span>
+            <span>{t("Start Crop Check")}</span>
           </Link>
 
           {/* Mobile Hamburger Toggle Button */}
@@ -183,7 +207,7 @@ export default function Navbar() {
             type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden p-2 rounded-xl text-stone-700 hover:bg-stone-100 transition-colors border border-stone-200"
-            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-label={isMobileMenuOpen ? t("Close menu") : t("Open menu")}
           >
             {isMobileMenuOpen ? <X className="w-5 h-5 text-stone-800" /> : <Menu className="w-5 h-5 text-stone-800" />}
           </button>
@@ -196,7 +220,7 @@ export default function Navbar() {
           {/* Navigation Links */}
           <div className="space-y-1">
             <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-2 pb-1">
-              Navigation
+              {t("Navigation")}
             </div>
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -216,7 +240,7 @@ export default function Navbar() {
                   }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-stone-400'}`} />
-                  <span>{item.name}</span>
+                  <span>{t(item.name)}</span>
                 </NavLink>
               );
             })}
@@ -230,7 +254,7 @@ export default function Navbar() {
               className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-colors"
             >
               <Sparkles className="w-4 h-4 text-emerald-200" />
-              <span>Start Crop Check</span>
+              <span>{t("Start Crop Check")}</span>
             </Link>
           </div>
 
@@ -245,9 +269,9 @@ export default function Navbar() {
                 {profile?.name ? profile.name.charAt(0) : <User className="w-4 h-4 text-emerald-700" />}
               </div>
               <div>
-                <div className="font-bold text-stone-900">{profile?.name || 'Farmer Profile'}</div>
+                <div className="font-bold text-stone-900">{profile?.name || t('Farmer Profile')}</div>
                 <div className="text-[11px] text-stone-500 font-normal">
-                  {profile?.village ? `${profile.village}, ${profile.district}` : 'View profile settings'}
+                  {profile?.village ? `${profile.village}, ${profile.district}` : t('View profile settings')}
                 </div>
               </div>
             </Link>
@@ -256,19 +280,22 @@ export default function Navbar() {
           {/* Quick Language Switcher in Mobile Menu */}
           <div className="pt-2 border-t border-stone-100">
             <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-2 pb-1.5">
-              Select Language / भाषा
+              {t("Select language")}
             </div>
+            {isSavingLanguage && (
+              <p className="px-2 py-1 text-[10px] text-stone-500" role="status">{t('Saving language...')}</p>
+            )}
+            {languageError && (
+              <p className="px-2 py-1 text-[10px] text-rose-700" role="alert">{t(languageError)}</p>
+            )}
             <div className="grid grid-cols-3 gap-2">
               {languages.map((lang) => (
                 <button
                   key={lang.code}
                   type="button"
-                  onClick={() => {
-                    setSelectedLang(lang.label);
-                    setIsMobileMenuOpen(false);
-                  }}
+                  onClick={() => handleLanguageChange(lang)}
                   className={`py-1.5 px-2 text-xs font-medium rounded-xl text-center border transition-all ${
-                    selectedLang === lang.label
+                    language === lang.code
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold'
                       : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
                   }`}

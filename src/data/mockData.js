@@ -4,6 +4,7 @@
 export const initialFarmerProfile = {
   name: "Ramesh Patil",
   mobile: "+91 98221 44556",
+  preferredLanguage: "English",
   state: "Maharashtra",
   district: "Pune",
   village: "Khed Shivapur",
@@ -43,7 +44,7 @@ export const mockCropAnalysis = {
   riskBand: "Moderate–High Risk",
   overallHealth: "Moderate Risk",
   assessmentSummary: "Visual symptoms and environmental conditions indicate a possible crop health issue.",
-  disclaimer: "Confidence depends on image quality, crop stage and available field information. This assessment provides decision support and risk indicators, not a guaranteed medical-style diagnosis.",
+  disclaimer: "This example risk indicator uses farmer-reported inputs only. It is not a guaranteed diagnosis, and uploaded images are not analyzed.",
   visualObservations: {
     image: "https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=800&q=80",
     detectedSymptoms: [
