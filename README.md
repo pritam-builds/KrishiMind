@@ -72,14 +72,19 @@ The frontend is architected with a dedicated service layer in [`frontend/src/ser
 Currently, `USE_MOCK_API = true` simulates responses for most services. Weather always calls `GET /api/weather?location={loc}`; when no external provider is configured, the endpoint returns clearly labeled sample fallback data.
 
 To switch to a live FastAPI backend:
-1. In `frontend/src/services/api.js`, set `USE_MOCK_API = false` (or configure `frontend/.env` with `VITE_USE_MOCK_API=false` and `VITE_API_BASE_URL=http://localhost:8000/api`).
-2. Implement corresponding FastAPI endpoints:
+1. Set `VITE_API_BASE_URL` in `frontend/.env` (copy `frontend/.env.example`) or in the frontend hosting provider's environment variables. Use `http://localhost:8000/api` for local development, or your deployed backend URL ending in `/api`. The frontend defaults to `http://localhost:8000/api` when the variable is unset.
+2. In `frontend/src/services/api.js`, set `USE_MOCK_API = false` when the remaining backend endpoints are ready.
+3. Implement corresponding FastAPI endpoints:
    - `POST /api/crop/analyze` — Receives `multipart/form-data` with image and JSON fields (`crop`, `stage`, `symptoms`, `recentRainfall`, `spreadSpeed`, etc.).
    - `GET  /api/weather?location={loc}` — Implemented; accepts `location` or `city` and returns meteorological data, forecast, agricultural risks, source, and timestamp. Sample fallback data is explicitly marked and is not live weather.
    - `GET  /api/market?crop={crop}&location={loc}` — Returns mandi modal prices, arrival volumes, and trends.
    - `POST /api/recommendation` — Receives crop situation and returns synthesized decision-support checklist.
    - `GET  /api/history` — Returns previous crop assessment logs for the authenticated farmer.
    - `GET  /api/profile` & `PUT /api/profile` — Retrieves and updates farmer profile data.
+
+### Railway Docker Deployment
+
+Create a Railway service for this repository and set its **Root Directory** to `backend`. Railway will build `backend/Dockerfile`, which starts Uvicorn on the port provided by Railway's `PORT` environment variable. The SQLite history database is stored in the container filesystem and will not persist across container replacement unless you configure persistent storage.
 
 ---
 

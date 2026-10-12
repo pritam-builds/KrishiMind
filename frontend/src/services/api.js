@@ -11,7 +11,10 @@ import {
 // Toggle mock data for services other than weather.
 // Set VITE_USE_MOCK_API=false in .env when those backend endpoints are ready.
 export const USE_MOCK_API = true;
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+export const API_BASE_URL = (
+  configuredApiBaseUrl || 'http://localhost:8000/api'
+).replace(/\/+$/, '');
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
