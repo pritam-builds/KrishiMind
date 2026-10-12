@@ -601,12 +601,12 @@ async def analyze_crop(
     score, risk_band, overall_health, factors, concerns, recommendations = assess_crop_inputs(
         symptoms=parsed_symptoms,
         spread_speed=spread_speed,
-        recent_rainfall=recent_rainfall or "",
-        irrigation_condition=irrigation_condition or "",
-        soil_condition=soil_condition or "",
-        growth_stage=growth_stage or "",
-        other_symptom_text=other_symptom_text or "",
-        additional_observation=additional_observation or "",
+        recent_rainfall=recent_rainfall,
+        irrigation_condition=irrigation_condition,
+        soil_condition=soil_condition,
+        growth_stage=growth_stage,
+        other_symptom_text=other_symptom_text,
+        additional_observation=additional_observation,
     )
     analyzed_at = datetime.now(timezone.utc)
     location_parts = [part.strip() for part in (village, district, state) if part.strip()]

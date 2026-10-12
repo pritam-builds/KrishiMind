@@ -42,8 +42,8 @@ It synthesizes **crop visual observations**, **farmer field observations**, **cr
 
 ### Installation & Development Server
 ```bash
-# 1. Clone or navigate to the project directory
-cd KrishiMind-CEPL
+# 1. Clone or navigate to the project directory, then enter frontend
+cd KrishiMind-CEPL\frontend
 
 # 2. Install dependencies (if not already installed)
 npm install
@@ -58,6 +58,7 @@ npm run dev
 
 ### Production Build
 ```bash
+cd frontend
 npm run build
 npm run preview
 ```
@@ -66,12 +67,12 @@ npm run preview
 
 ## Connecting the FastAPI Backend Later
 
-The frontend is architected with a dedicated service layer in [`src/services/api.js`](src/services/api.js).
+The frontend is architected with a dedicated service layer in [`frontend/src/services/api.js`](frontend/src/services/api.js).
 
 Currently, `USE_MOCK_API = true` simulates responses for most services. Weather always calls `GET /api/weather?location={loc}`; when no external provider is configured, the endpoint returns clearly labeled sample fallback data.
 
 To switch to a live FastAPI backend:
-1. In `src/services/api.js`, set `USE_MOCK_API = false` (or configure `.env` with `VITE_USE_MOCK_API=false` and `VITE_API_BASE_URL=http://localhost:8000/api`).
+1. In `frontend/src/services/api.js`, set `USE_MOCK_API = false` (or configure `frontend/.env` with `VITE_USE_MOCK_API=false` and `VITE_API_BASE_URL=http://localhost:8000/api`).
 2. Implement corresponding FastAPI endpoints:
    - `POST /api/crop/analyze` — Receives `multipart/form-data` with image and JSON fields (`crop`, `stage`, `symptoms`, `recentRainfall`, `spreadSpeed`, etc.).
    - `GET  /api/weather?location={loc}` — Implemented; accepts `location` or `city` and returns meteorological data, forecast, agricultural risks, source, and timestamp. Sample fallback data is explicitly marked and is not live weather.
