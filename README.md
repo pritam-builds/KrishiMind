@@ -72,7 +72,7 @@ The frontend is architected with a dedicated service layer in [`frontend/src/ser
 Currently, `USE_MOCK_API = true` simulates responses for most services. Weather always calls `GET /api/weather?location={loc}`; when no external provider is configured, the endpoint returns clearly labeled sample fallback data.
 
 To switch to a live FastAPI backend:
-1. Set `VITE_API_BASE_URL` in `frontend/.env` (copy `frontend/.env.example`) or in the frontend hosting provider's environment variables. Use `http://localhost:8000/api` for local development, or your deployed backend URL ending in `/api`. The frontend defaults to `http://localhost:8000/api` when the variable is unset.
+1. Set `VITE_API_BASE_URL` in `frontend/.env` (copy `frontend/.env.example`) or in the frontend hosting provider's environment variables. Vite embeds this value at build time; for a Vercel deployment, add it to the Vercel frontend project's Environment Variables and redeploy. Use `http://localhost:8000/api` locally, or your deployed backend URL ending in `/api`. Without an override, production builds use `https://krishimind-production.up.railway.app/api` and development uses `http://localhost:8000/api`.
 2. In `frontend/src/services/api.js`, set `USE_MOCK_API = false` when the remaining backend endpoints are ready.
 3. Implement corresponding FastAPI endpoints:
    - `POST /api/crop/analyze` — Receives `multipart/form-data` with image and JSON fields (`crop`, `stage`, `symptoms`, `recentRainfall`, `spreadSpeed`, etc.).

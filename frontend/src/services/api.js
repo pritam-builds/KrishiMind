@@ -12,8 +12,11 @@ import {
 // Set VITE_USE_MOCK_API=false in .env when those backend endpoints are ready.
 export const USE_MOCK_API = true;
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+const defaultApiBaseUrl = import.meta.env.PROD
+  ? 'https://krishimind-production.up.railway.app/api'
+  : 'http://localhost:8000/api';
 export const API_BASE_URL = (
-  configuredApiBaseUrl || 'http://localhost:8000/api'
+  configuredApiBaseUrl || defaultApiBaseUrl
 ).replace(/\/+$/, '');
 
 const apiClient = axios.create({
